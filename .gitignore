@@ -1,0 +1,5 @@
+.vs
+bin/comrade-klick.exe
+bin/comrade-klick.pdb
+bin/*.cso
+tmp/
