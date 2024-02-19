@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "414602139ee9c445",
+        "id": "b2591245d5121223",
         "type": "tabs",
         "children": [
           {
-            "id": "42a7303e513cb017",
+            "id": "2e7e6903224db290",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -154,12 +154,16 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "b6162b6f4997a9f0",
+  "active": "2e7e6903224db290",
   "lastOpenFiles": [
-    "gpu-preemption.md",
-    "daily/2024-02-12.md",
-    "planning.md",
+    "planning.pdf",
     "async-reprojection.md",
+    "daily/2024-02-15.md",
+    "daily/2024-02-13.md",
+    "daily/2024-02-12.md",
+    "daily/2024-02-14.md",
+    "planning.md",
+    "gpu-preemption.md",
     "async.md",
     "daily",
     "Welcome.md"

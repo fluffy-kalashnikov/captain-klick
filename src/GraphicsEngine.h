@@ -13,8 +13,11 @@ private:
 	HWND myHwnd{};
 	D3D12_VIEWPORT myViewport{};
 	D3D12_RECT myScissorRect{};
+	UINT myWidth{};
+	UINT myHeight{};
+	FLOAT myAspectRatio{};
 	/** pipeline */
-	ComPtr<ID3D12Debug> myDebug;
+	ComPtr<ID3D12Debug1> myDebug;
 	ComPtr<ID3D12Device> myDevice;
 	ComPtr<IDXGISwapChain3> mySwapChain;
 	ComPtr<IDXGIFactory> myFactory;

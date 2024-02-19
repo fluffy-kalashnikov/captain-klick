@@ -7,6 +7,7 @@ void GraphicsEngine::OnInitialize(HWND aHwnd)
     try
     {
         myHwnd = aHwnd;
+        OnUpdate();
         LoadPipeline();
         LoadAssets();
     }
@@ -20,11 +21,18 @@ void GraphicsEngine::LoadPipeline()
 {
     try
     {
-        ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&myDebug)));
-        myDebug->EnableDebugLayer();
+        {
+            ComPtr<ID3D12Debug> debug;
+            ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debug)));
+            ThrowIfFailed(debug.As(&myDebug));
+            myDebug->EnableDebugLayer();
+            myDebug->SetEnableGPUBasedValidation(true);
+            //myDebug->SetEnableAutoName(true);
+        }
+        
         ThrowIfFailed(CreateDXGIFactory(IID_PPV_ARGS(&myFactory)));
         ThrowIfFailed(myFactory->EnumAdapters(0, &myAdapter));
-        ThrowIfFailed(D3D12CreateDevice(myAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&myDevice)));
+        ThrowIfFailed(D3D12CreateDevice(myAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&myDevice)));
         myDevice->SetName(L"myDevice");
 
         {
@@ -36,8 +44,8 @@ void GraphicsEngine::LoadPipeline()
         {
             DXGI_SWAP_CHAIN_DESC swapChainDesc{};
             swapChainDesc.BufferCount = FRAME_COUNT;
-            swapChainDesc.BufferDesc.Width = 1920;
-            swapChainDesc.BufferDesc.Height = 1080;
+            swapChainDesc.BufferDesc.Width = myWidth;
+            swapChainDesc.BufferDesc.Height = myHeight;
             swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
             swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
             swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
@@ -58,17 +66,17 @@ void GraphicsEngine::LoadPipeline()
             rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
             ThrowIfFailed(myDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&myRtvHeap)));
             myRtvHeap->SetName(L"myRtvHeap");
+            myRtvDescriptorSize = myDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
         }
         {
-            myRtvDescriptorSize = myDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
             D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = myRtvHeap->GetCPUDescriptorHandleForHeapStart();
             for (UINT n = 0; n < FRAME_COUNT; n++)
             {
                 ThrowIfFailed(mySwapChain->GetBuffer(n, IID_PPV_ARGS(&myRenderTargets[n])));
                 myDevice->CreateRenderTargetView(myRenderTargets[n].Get(), nullptr, rtvHandle);
-                myRenderTargets[n]->SetName(L"myRenderTagrgets[x]");
                 rtvHandle.ptr += myRtvDescriptorSize;
+
+                myRenderTargets[n]->SetName(L"myRenderTagrgets[x]");
             }
         }
 
@@ -87,8 +95,7 @@ void GraphicsEngine::LoadAssets()
     {
         try
         {
-            ComPtr<ID3DBlob> rootSignatureBlob;
-            ComPtr<ID3DBlob> rootSignatureBlobError;
+            ComPtr<ID3DBlob> rootSignature, rootSignatureError;
 
             D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
             rootSignatureDesc.NumParameters = 0;
@@ -97,10 +104,10 @@ void GraphicsEngine::LoadAssets()
             rootSignatureDesc.pStaticSamplers = nullptr;
             rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
             ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc,
-                D3D_ROOT_SIGNATURE_VERSION_1_0, &rootSignatureBlob, &rootSignatureBlobError));
+                D3D_ROOT_SIGNATURE_VERSION_1_0, &rootSignature, &rootSignatureError));
 
-            ThrowIfFailed(myDevice->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
-                rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&myRootSignature)));
+            ThrowIfFailed(myDevice->CreateRootSignature(0, rootSignature->GetBufferPointer(),
+                rootSignature->GetBufferSize(), IID_PPV_ARGS(&myRootSignature)));
         }
         catch (...)
         {
@@ -122,9 +129,9 @@ void GraphicsEngine::LoadAssets()
             rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
             rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
             rasterizerDesc.FrontCounterClockwise = FALSE;
-            rasterizerDesc.DepthBias = 0;
-            rasterizerDesc.DepthBiasClamp = 0.f;
-            rasterizerDesc.SlopeScaledDepthBias = 0.f;
+            rasterizerDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+            rasterizerDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+            rasterizerDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
             rasterizerDesc.DepthClipEnable = TRUE;
             rasterizerDesc.MultisampleEnable = FALSE;
             rasterizerDesc.AntialiasedLineEnable = FALSE;
@@ -145,46 +152,47 @@ void GraphicsEngine::LoadAssets()
             blendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
             blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
-            D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-            depthStencilDesc.DepthEnable = /*TRUE*/FALSE; //usually true, but not for the triangle demo
-            depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-            depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-            depthStencilDesc.StencilEnable = FALSE;
-            depthStencilDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
-            depthStencilDesc.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
-            depthStencilDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-            depthStencilDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-            depthStencilDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-            depthStencilDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-            depthStencilDesc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-            depthStencilDesc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-            depthStencilDesc.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-            depthStencilDesc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+            //D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+            //depthStencilDesc.DepthEnable = TRUE; //usually true, but not for the triangle demo
+            //depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+            //depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+            //depthStencilDesc.StencilEnable = FALSE;
+            //depthStencilDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+            //depthStencilDesc.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+            //depthStencilDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+            //depthStencilDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+            //depthStencilDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+            //depthStencilDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+            //depthStencilDesc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+            //depthStencilDesc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+            //depthStencilDesc.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+            //depthStencilDesc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
 
             D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
             graphicsPipelineStateDesc.pRootSignature = myRootSignature.Get();
             graphicsPipelineStateDesc.VS = { reinterpret_cast<UINT8*>(defaultVsBlob->GetBufferPointer()), defaultVsBlob->GetBufferSize() };
             graphicsPipelineStateDesc.PS = { reinterpret_cast<UINT8*>(defaultPsBlob->GetBufferPointer()), defaultPsBlob->GetBufferSize() };
-            graphicsPipelineStateDesc.DS;
-            graphicsPipelineStateDesc.HS;
-            graphicsPipelineStateDesc.GS;
-            graphicsPipelineStateDesc.StreamOutput;
+            //graphicsPipelineStateDesc.DS;
+            //graphicsPipelineStateDesc.HS;
+            //graphicsPipelineStateDesc.GS;
+            //graphicsPipelineStateDesc.StreamOutput;
             graphicsPipelineStateDesc.BlendState = blendDesc;
             graphicsPipelineStateDesc.SampleMask = UINT_MAX;
             graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
-            graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
+            graphicsPipelineStateDesc.DepthStencilState.DepthEnable = FALSE;
+            graphicsPipelineStateDesc.DepthStencilState.StencilEnable = FALSE;
             graphicsPipelineStateDesc.InputLayout = { inputElementDescs, sizeof(inputElementDescs) / sizeof(inputElementDescs[0]) };
-            graphicsPipelineStateDesc.IBStripCutValue;
+            //graphicsPipelineStateDesc.IBStripCutValue;
             graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
             graphicsPipelineStateDesc.NumRenderTargets = 1;
             graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-            graphicsPipelineStateDesc.DSVFormat;
+            //graphicsPipelineStateDesc.DSVFormat;
             graphicsPipelineStateDesc.SampleDesc.Count = 1;
-            graphicsPipelineStateDesc.SampleDesc.Quality;
-            graphicsPipelineStateDesc.NodeMask;
-            graphicsPipelineStateDesc.CachedPSO;
-            graphicsPipelineStateDesc.Flags;
+            //graphicsPipelineStateDesc.SampleDesc.Quality;
+            //graphicsPipelineStateDesc.NodeMask;
+            //graphicsPipelineStateDesc.CachedPSO;
+            //graphicsPipelineStateDesc.Flags;
             myDevice->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&myPipelineState));
         }
         catch (...)
@@ -205,13 +213,16 @@ void GraphicsEngine::LoadAssets()
 
         try
         {
+            const Vec4 color = { 1.f, 1.f, 0.f, 1.f };
+            //const Vertex vertices[3] = {
+            //    { Vec4(-0.5f, -0.5f, 0.f, 0.f) , color},
+            //    { Vec4(0.f, 0.5f, 0.f, 0.f), color },
+            //    { Vec4(0.5f, -0.5f, 0.f, 0.f), color },
+            //};
             const Vertex vertices[3] = {
-                { { -0.5f, -0.5f, 0.f, 0.f }, { 1.f, 1.f, 0.f, 1.f } },
-                { { 0.f, 0.5f, 0.f, 0.f }, { 0.f, 1.f, 1.f, 1.f } },
-                { { 0.5f, -0.5f, 0.f, 0.f }, { 1.f, 0.f, 1.f, 1.f } },
-            };
-            const Index indices[3] = {
-                0, 1, 2
+                { { 0.0f, 0.25f * myAspectRatio, 0.0f, 1.f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+                { { 0.25f, -0.25f * myAspectRatio, 0.0f, 1.f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+                { { -0.25f, -0.25f * myAspectRatio, 0.0f, 1.f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
             };
 
             D3D12_HEAP_PROPERTIES heapProperties{};
@@ -279,15 +290,15 @@ void GraphicsEngine::OnUpdate()
 {
     try
     {
-        GetWindowRect(myHwnd, &myScissorRect);
+        GetClientRect(myHwnd, &myScissorRect);
+        myWidth = myScissorRect.right;
+        myHeight = myScissorRect.bottom;
+        myAspectRatio = static_cast<FLOAT>(myWidth) / static_cast<FLOAT>(myHeight);
 
-        D3D12_VIEWPORT viewport{};
-        viewport.TopLeftX;
-        viewport.TopLeftY;
-        viewport.Width = static_cast<FLOAT>(myScissorRect.right);
-        viewport.Height = static_cast<FLOAT>(myScissorRect.bottom);
-        viewport.MinDepth = 0;
-        viewport.MaxDepth = 1;
+        myViewport.Width = static_cast<FLOAT>(myWidth);
+        myViewport.Height = static_cast<FLOAT>(myHeight);
+        myViewport.MinDepth = 0;
+        myViewport.MaxDepth = 1;
     }
     catch (...)
     {
