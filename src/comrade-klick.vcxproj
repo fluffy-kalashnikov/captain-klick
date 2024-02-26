@@ -46,10 +46,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>../bin/</OutDir>
     <IntDir>../tmp/</IntDir>
+    <MultiProcFXC>true</MultiProcFXC>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>../bin/</OutDir>
     <IntDir>../tmp/</IntDir>
+    <MultiProcFXC>true</MultiProcFXC>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -66,6 +68,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;$(CoreLibraryDependencies)</AdditionalDependencies>
     </Link>
+    <FxCompile>
+      <ShaderModel>5.1</ShaderModel>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -88,6 +93,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;$(CoreLibraryDependencies)</AdditionalDependencies>
     </Link>
+    <FxCompile>
+      <ShaderModel>5.1</ShaderModel>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Console.cpp" />
@@ -97,12 +105,14 @@
     <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cbFrame.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="GraphicsEngine.h" />
-    <ClInclude Include="Vec2.h" />
-    <ClInclude Include="Vec4.h" />
-    <ClInclude Include="Vec3.h" />
+    <ClInclude Include="math\Mat4.h" />
+    <ClInclude Include="math\Vec2.h" />
+    <ClInclude Include="math\Vec4.h" />
+    <ClInclude Include="math\Vec3.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
@@ -118,6 +128,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="hlsl\Model.hlsli" />
+    <None Include="hlsl\slots.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

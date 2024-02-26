@@ -26,13 +26,18 @@ private:
 	ComPtr<ID3D12GraphicsCommandList> myCommandList;
 	ComPtr<ID3D12CommandQueue> myCommandQueue;
 	ComPtr<ID3D12RootSignature> myRootSignature;
-	ComPtr<ID3D12DescriptorHeap> myRtvHeap;
 	ComPtr<ID3D12Resource> myRenderTargets[FRAME_COUNT];
 	ComPtr<ID3D12PipelineState> myPipelineState;
-	UINT myRtvDescriptorSize{};
 	/** resources */
+	ComPtr<ID3D12DescriptorHeap> myRtvHeap;
+	ComPtr<ID3D12DescriptorHeap> myDsvHeap;
+	ComPtr<ID3D12DescriptorHeap> myCbvSrvHeap;
+	SIZE_T myRtvDescriptorSize{};
+	SIZE_T myDsvDescriptorSize{};
+	SIZE_T myCbvSrvDescriptorSize{};
+	ComPtr<ID3D12Resource> myFrameConstantBuffer;
 	ComPtr<ID3D12Resource> myVertexBuffer;
-	D3D12_VERTEX_BUFFER_VIEW myVertexBufferView;
+	D3D12_VERTEX_BUFFER_VIEW myVertexBufferView{};
 	/** synchronization */
 	UINT myFrameIndex{};
 	HANDLE myFenceEvent{};

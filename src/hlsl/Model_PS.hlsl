@@ -3,6 +3,6 @@
 PixelOut main(VertexOut input)
 {
     PixelOut output;
-    output.color = float4(1.f, 0.f, 0.f, 1.f);
+    output.color = input.color;
     return output;
 }

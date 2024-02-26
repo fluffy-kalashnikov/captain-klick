@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "cbFrame.h"
 #include "GraphicsEngine.h"
 #include "Vertex.h"
 
@@ -26,8 +27,7 @@ void GraphicsEngine::LoadPipeline()
             ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debug)));
             ThrowIfFailed(debug.As(&myDebug));
             myDebug->EnableDebugLayer();
-            myDebug->SetEnableGPUBasedValidation(true);
-            //myDebug->SetEnableAutoName(true);
+            //myDebug->SetEnableGPUBasedValidation(true);
         }
         
         ThrowIfFailed(CreateDXGIFactory(IID_PPV_ARGS(&myFactory)));
@@ -79,6 +79,15 @@ void GraphicsEngine::LoadPipeline()
                 myRenderTargets[n]->SetName(L"myRenderTagrgets[x]");
             }
         }
+        {
+            D3D12_DESCRIPTOR_HEAP_DESC cbvSrvUavHeapDesc{};
+            cbvSrvUavHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+            cbvSrvUavHeapDesc.NumDescriptors = 512; //TODO: figure out actual number of shite required
+            cbvSrvUavHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+            ThrowIfFailed(myDevice->CreateDescriptorHeap(&cbvSrvUavHeapDesc, IID_PPV_ARGS(&myCbvSrvHeap)));
+            myCbvSrvHeap->SetName(L"myCbvSrvUavHeap");
+            myCbvSrvDescriptorSize = myDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        }
 
         ThrowIfFailed(myDevice->CreateCommandAllocator(
             D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&myCommandAllocator)));
@@ -95,14 +104,75 @@ void GraphicsEngine::LoadAssets()
     {
         try
         {
-            ComPtr<ID3DBlob> rootSignature, rootSignatureError;
+            {
+                cbFrame frame;
+                frame.deltaSeconds = 69;
+                frame.timeSeconds = 420;
+                frame.transform = Mat4::Identity;
+
+
+                D3D12_HEAP_PROPERTIES heapProperties{};
+                heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
+
+                D3D12_RESOURCE_DESC resourceDesc{};
+                resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+                resourceDesc.Width = sizeof(frame);
+                resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+                ThrowIfFailed(myDevice->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE,
+                    &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&myFrameConstantBuffer)));
+
+
+                D3D12_CPU_DESCRIPTOR_HANDLE handle = myCbvSrvHeap->GetCPUDescriptorHandleForHeapStart();
+                
+                //TODO: make actual constant buffer instance on GPU
+                D3D12_CONSTANT_BUFFER_VIEW_DESC frameBufferViewDesc{};
+                frameBufferViewDesc.BufferLocation = myFrameConstantBuffer->GetGPUVirtualAddress();
+                frameBufferViewDesc.SizeInBytes = sizeof(frame);
+                myDevice->CreateConstantBufferView(&frameBufferViewDesc, handle);
+            }
+
+
+
+            D3D12_ROOT_PARAMETER rootParameters[1]{};
+            {
+                D3D12_ROOT_PARAMETER& frameBuffer = rootParameters[0];
+                frameBuffer.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+                frameBuffer.Descriptor.ShaderRegister = 0; //TODO: set to actual constant buffer descriptor
+                frameBuffer.Descriptor.RegisterSpace = 0;
+                frameBuffer.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            }
+
+            D3D12_STATIC_SAMPLER_DESC staticSamplerDescs[1]{};
+            {
+                D3D12_STATIC_SAMPLER_DESC& trilinearWrap = staticSamplerDescs[0];
+                trilinearWrap.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+                trilinearWrap.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+                trilinearWrap.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+                trilinearWrap.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+                trilinearWrap.MipLODBias = 0;
+                trilinearWrap.MaxAnisotropy = 1;
+                trilinearWrap.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+                trilinearWrap.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+                trilinearWrap.MinLOD = -D3D12_FLOAT32_MAX;
+                trilinearWrap.MaxLOD = D3D12_FLOAT32_MAX;
+                trilinearWrap.ShaderRegister = 0;
+                trilinearWrap.RegisterSpace = 0;
+                trilinearWrap.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            }
 
             D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
-            rootSignatureDesc.NumParameters = 0;
-            rootSignatureDesc.pParameters = nullptr;
-            rootSignatureDesc.NumStaticSamplers = 0;
-            rootSignatureDesc.pStaticSamplers = nullptr;
-            rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+            rootSignatureDesc.NumParameters = sizeof(rootParameters) / sizeof(rootParameters[0]);
+            rootSignatureDesc.pParameters = rootParameters;
+            rootSignatureDesc.NumStaticSamplers = sizeof(staticSamplerDescs) / sizeof(staticSamplerDescs[0]);
+            rootSignatureDesc.pStaticSamplers = staticSamplerDescs;
+            rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
+                                    | D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS
+                                    | D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS
+                                    | D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS
+                                    | D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS;
+
+            ComPtr<ID3DBlob> rootSignature, rootSignatureError;
             ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc,
                 D3D_ROOT_SIGNATURE_VERSION_1_0, &rootSignature, &rootSignatureError));
 
@@ -214,11 +284,6 @@ void GraphicsEngine::LoadAssets()
         try
         {
             const Vec4 color = { 1.f, 1.f, 0.f, 1.f };
-            //const Vertex vertices[3] = {
-            //    { Vec4(-0.5f, -0.5f, 0.f, 0.f) , color},
-            //    { Vec4(0.f, 0.5f, 0.f, 0.f), color },
-            //    { Vec4(0.5f, -0.5f, 0.f, 0.f), color },
-            //};
             const Vertex vertices[3] = {
                 { { 0.0f, 0.25f * myAspectRatio, 0.0f, 1.f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
                 { { 0.25f, -0.25f * myAspectRatio, 0.0f, 1.f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
@@ -227,10 +292,6 @@ void GraphicsEngine::LoadAssets()
 
             D3D12_HEAP_PROPERTIES heapProperties{};
             heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
-            heapProperties.CPUPageProperty;
-            heapProperties.MemoryPoolPreference;
-            heapProperties.CreationNodeMask;
-            heapProperties.VisibleNodeMask;
 
             D3D12_RESOURCE_DESC resourceDesc{};
             resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -293,7 +354,7 @@ void GraphicsEngine::OnUpdate()
         GetClientRect(myHwnd, &myScissorRect);
         myWidth = myScissorRect.right;
         myHeight = myScissorRect.bottom;
-        myAspectRatio = static_cast<FLOAT>(myWidth) / static_cast<FLOAT>(myHeight);
+        myAspectRatio = myWidth / static_cast<FLOAT>(myHeight);
 
         myViewport.Width = static_cast<FLOAT>(myWidth);
         myViewport.Height = static_cast<FLOAT>(myHeight);

@@ -1,0 +1,1 @@
+a root signature is contains a layout of views and [root parameters](root-parameter) that has not been defined yet. also contains [static samplers](static-sampler).

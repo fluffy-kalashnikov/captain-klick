@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "planning.md",
+                "file": "daily/2024-02-26.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "planning.md",
+                "file": "daily/2024-02-26.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "planning.md",
+                "file": "daily/2024-02-26.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "planning.md"
+                "file": "daily/2024-02-26.md"
               }
             }
           },
@@ -156,13 +156,23 @@
   },
   "active": "2e7e6903224db290",
   "lastOpenFiles": [
+    "planning.md",
+    "daily/2024-02-26.md",
+    "Untitled.md",
+    "daily/2024-02-22.md",
+    "daily/2024-02-21.md",
+    "daily/2024-02-20.md",
+    "daily/2024-02-19.md",
+    "daily/2024-02-12.md",
+    "daily/2024-02-13.md",
+    "daily/2024-02-14.md",
+    "daily/2024-02-15.md",
+    "root-signature.md",
+    "root-parameter.md",
+    "descriptor.md",
+    "resource-barriers.md",
     "planning.pdf",
     "async-reprojection.md",
-    "daily/2024-02-15.md",
-    "daily/2024-02-13.md",
-    "daily/2024-02-12.md",
-    "daily/2024-02-14.md",
-    "planning.md",
     "gpu-preemption.md",
     "async.md",
     "daily",
