@@ -8,11 +8,10 @@
 #include <d3d12.h>
 #include "d3dx12.h"
 #include <dxgi1_6.h>
-#include <wrl.h>
-#include <stdexcept>
 #include <format>
-template<class T>
-using ComPtr = Microsoft::WRL::ComPtr<T>;
+#include <type_traits>
+#include "GraphicsEngine/ComPtr.h"
+#include <stdexcept>
 
 inline std::string ToString(HRESULT aCode)
 {

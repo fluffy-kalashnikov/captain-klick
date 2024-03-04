@@ -48,7 +48,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "direct3d",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -65,7 +65,8 @@
               "state": {}
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -154,7 +155,7 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "2e7e6903224db290",
+  "active": "db86d129e97af076",
   "lastOpenFiles": [
     "daily/2024-02-12.md",
     "whacko-hlsl-cpp-constant-buffers.png",

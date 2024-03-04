@@ -100,18 +100,25 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GraphicsEngine\GraphicsDevice.cpp" />
+    <ClCompile Include="GraphicsEngine\Buffer.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Clock.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="GraphicsEngine\GraphicsEngine.cpp" />
+    <ClCompile Include="GraphicsEngine\Mesh.cpp" />
     <ClCompile Include="GuardedMain.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GraphicsEngine\GraphicsDevice.h" />
+    <ClInclude Include="GraphicsEngine\Buffer.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Clock.h" />
+    <ClInclude Include="GraphicsEngine\ComPtr.h" />
+    <ClInclude Include="GraphicsEngine\Mesh.h" />
     <ClInclude Include="HLSL\ConstantBuffers.hlsli.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="d3dx12.h" />

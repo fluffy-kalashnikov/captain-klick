@@ -2,6 +2,8 @@
 #include "pch.h"
 #include "Math/Mat4.h"
 #include "Math/Vec2.h"
+#include "GraphicsEngine/Mesh.h"
+#include "GraphicsEngine/GraphicsDevice.h"
 
 class GraphicsEngine
 {
@@ -12,6 +14,7 @@ public:
 	void OnRender();
 	void OnDestroy();
 private:
+	GraphicsDevice myGraphicsDevice;
 	D3D12_RECT myScissorRect{};
 	D3D12_VIEWPORT myViewport{};
 	/** pipeline */
@@ -34,12 +37,15 @@ private:
 	SIZE_T myRtvDescriptorSize{};
 	SIZE_T myDsvDescriptorSize{};
 	SIZE_T myCbvSrvDescriptorSize{};
-	ComPtr<ID3D12Resource> myInstanceConstantBuffer;
-	ComPtr<ID3D12Resource> myPassConstantBuffer;
-	ComPtr<ID3D12Resource> myVertexBuffer;
-	ComPtr<ID3D12Resource> myIndexBuffer;
-	D3D12_VERTEX_BUFFER_VIEW myVertexBufferView{};
-	D3D12_INDEX_BUFFER_VIEW myIndexBufferView{};
+	//ComPtr<ID3D12Resource> myInstanceConstantBuffer;
+	//ComPtr<ID3D12Resource> myPassConstantBuffer;
+	Buffer myInstanceConstantBuffer;
+	Buffer myPassConstantBuffer;
+	Mesh myMesh;
+	//ComPtr<ID3D12Resource> myVertexBuffer;
+	//ComPtr<ID3D12Resource> myIndexBuffer;
+	//D3D12_VERTEX_BUFFER_VIEW myVertexBufferView{};
+	//D3D12_INDEX_BUFFER_VIEW myIndexBufferView{};
 	/** synchronization */
 	UINT myFrameIndex{};
 	HANDLE myFenceEvent{};

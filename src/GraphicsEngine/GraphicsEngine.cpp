@@ -48,6 +48,10 @@ void GraphicsEngine::LoadPipeline()
         myDsvDescriptorSize = myDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         myRtvDescriptorSize = myDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
+        myGraphicsDevice.Initialize(myDevice);
+
+
+
         {
             D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
             commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -154,42 +158,53 @@ void GraphicsEngine::LoadAssets()
         try
         {
             {
-                D3D12_HEAP_PROPERTIES uploadHeap{};
-                uploadHeap.Type = D3D12_HEAP_TYPE_UPLOAD;
+                //D3D12_HEAP_PROPERTIES uploadHeap{};
+                //uploadHeap.Type = D3D12_HEAP_TYPE_UPLOAD;
 
-                D3D12_RESOURCE_DESC instanceConstantBufferDesc{};
-                instanceConstantBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-                instanceConstantBufferDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-                instanceConstantBufferDesc.Width = sizeof(cbPassStruct);
-                instanceConstantBufferDesc.Height = 1;
-                instanceConstantBufferDesc.DepthOrArraySize = 1;
-                instanceConstantBufferDesc.MipLevels = 1;
-                instanceConstantBufferDesc.SampleDesc.Count = 1;
-                instanceConstantBufferDesc.SampleDesc.Quality = 0;
-                instanceConstantBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-                instanceConstantBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+                //D3D12_RESOURCE_DESC instanceConstantBufferDesc{};
+                //instanceConstantBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+                //instanceConstantBufferDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+                //instanceConstantBufferDesc.Width = sizeof(cbInstanceStruct);
+                //instanceConstantBufferDesc.Height = 1;
+                //instanceConstantBufferDesc.DepthOrArraySize = 1;
+                //instanceConstantBufferDesc.MipLevels = 1;
+                //instanceConstantBufferDesc.SampleDesc.Count = 1;
+                //instanceConstantBufferDesc.SampleDesc.Quality = 0;
+                //instanceConstantBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+                //instanceConstantBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-                ThrowIfFailed(myDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE,
-                    &instanceConstantBufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, 
-                    IID_PPV_ARGS(&myInstanceConstantBuffer)));
-                ThrowIfFailed(myInstanceConstantBuffer->SetName(L"myInstanceConstantBuffer"));
+                //ThrowIfFailed(myDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE,
+                //    &instanceConstantBufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, 
+                //    IID_PPV_ARGS(&myInstanceConstantBuffer)));
+                //ThrowIfFailed(myInstanceConstantBuffer->SetName(L"myInstanceConstantBuffer"));
 
-                D3D12_RESOURCE_DESC passConstantBufferDesc{};
-                passConstantBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-                passConstantBufferDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-                passConstantBufferDesc.Width = sizeof(cbPassStruct);
-                passConstantBufferDesc.Height = 1;
-                passConstantBufferDesc.DepthOrArraySize = 1;
-                passConstantBufferDesc.MipLevels = 1;
-                passConstantBufferDesc.SampleDesc.Count = 1;
-                passConstantBufferDesc.SampleDesc.Quality = 0;
-                passConstantBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-                passConstantBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-                ThrowIfFailed(myDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE,
-                    &passConstantBufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, 
-                    IID_PPV_ARGS(&myPassConstantBuffer)));
-                ThrowIfFailed(myPassConstantBuffer->SetName(L"myPassConstantBuffer"));
+
+                myInstanceConstantBuffer = myGraphicsDevice.CreateUploadBuffer<cbInstanceStruct>(L"cbInstance");
+                myPassConstantBuffer = myGraphicsDevice.CreateUploadBuffer<cbPassStruct>(L"cbPass");
+
+
+
+
+
+
+
+                //D3D12_RESOURCE_DESC passConstantBufferDesc{};
+                //passConstantBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+                //passConstantBufferDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+                //passConstantBufferDesc.Width = sizeof(cbPassStruct);
+                //passConstantBufferDesc.Height = 1;
+                //passConstantBufferDesc.DepthOrArraySize = 1;
+                //passConstantBufferDesc.MipLevels = 1;
+                //passConstantBufferDesc.SampleDesc.Count = 1;
+                //passConstantBufferDesc.SampleDesc.Quality = 0;
+                //passConstantBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+                //passConstantBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+                //ThrowIfFailed(myDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE,
+                //    &passConstantBufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, 
+                //    IID_PPV_ARGS(&myPassConstantBuffer)));
+                //ThrowIfFailed(myPassConstantBuffer->SetName(L"myPassConstantBuffer"));
             }
 
 
@@ -342,7 +357,7 @@ void GraphicsEngine::LoadAssets()
             std::throw_with_nested(std::runtime_error("failed to create command list"));
         }
 
-        try
+
         {
             const Vertex vertices[24] = {
                 //top
@@ -376,43 +391,6 @@ void GraphicsEngine::LoadAssets()
                 { -50,-50, 50 },
                 { -50,-50,-50 } 
             };
-
-            D3D12_HEAP_PROPERTIES heapProperties{};
-            heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
-
-            D3D12_RESOURCE_DESC vertexBufferDesc{};
-            vertexBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-            vertexBufferDesc.Alignment = 0;
-            vertexBufferDesc.Width = sizeof(vertices);
-            vertexBufferDesc.Height = 1;
-            vertexBufferDesc.DepthOrArraySize = 1;
-            vertexBufferDesc.MipLevels = 1;
-            vertexBufferDesc.Format = DXGI_FORMAT_UNKNOWN;
-            vertexBufferDesc.SampleDesc.Count = 1;
-            vertexBufferDesc.SampleDesc.Quality = 0;
-            vertexBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-            vertexBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-            ThrowIfFailed(myDevice->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE,
-                &vertexBufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&myVertexBuffer)));
-            ThrowIfFailed(myVertexBuffer->SetName(L"myVertexBuffer"));
-
-            D3D12_RANGE range{ 0, 0 };
-            void* pVertexDataBegin{};
-            ThrowIfFailed(myVertexBuffer->Map(0, &range, &pVertexDataBegin));
-            std::memcpy(pVertexDataBegin, vertices, sizeof(vertices));
-            myVertexBuffer->Unmap(0, nullptr);
-
-            myVertexBufferView.BufferLocation = myVertexBuffer->GetGPUVirtualAddress();
-            myVertexBufferView.StrideInBytes = sizeof(vertices[0]);
-            myVertexBufferView.SizeInBytes = sizeof(vertices);
-        }
-        catch (...)
-        {
-            std::throw_with_nested(std::runtime_error("failed to create vertex buffer"));
-        }
-        try
-        {
             const Index indices[36] = { 
                  0,  1,  2,
                  2,  3,  0,
@@ -427,40 +405,7 @@ void GraphicsEngine::LoadAssets()
                 20, 21, 22,
                 22, 23, 20
             };
-
-            D3D12_HEAP_PROPERTIES heapProperties{};
-            heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
-
-            D3D12_RESOURCE_DESC indexBufferDesc{};
-            indexBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-            indexBufferDesc.Alignment = 0;
-            indexBufferDesc.Width = sizeof(indices);
-            indexBufferDesc.Height = 1;
-            indexBufferDesc.DepthOrArraySize = 1;
-            indexBufferDesc.MipLevels = 1;
-            indexBufferDesc.Format = DXGI_FORMAT_UNKNOWN;
-            indexBufferDesc.SampleDesc.Count = 1;
-            indexBufferDesc.SampleDesc.Quality = 0;
-            indexBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-            indexBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-            ThrowIfFailed(myDevice->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE,
-                &indexBufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&myIndexBuffer)));
-            ThrowIfFailed(myIndexBuffer->SetName(L"myIndexBuffer"));
-
-            D3D12_RANGE range{ 0, 0 };
-            void* pVertexDataBegin{};
-            ThrowIfFailed(myIndexBuffer->Map(0, &range, &pVertexDataBegin));
-            std::memcpy(pVertexDataBegin, indices, sizeof(indices));
-            myIndexBuffer->Unmap(0, nullptr);
-
-            myIndexBufferView.BufferLocation = myIndexBuffer->GetGPUVirtualAddress();
-            myIndexBufferView.SizeInBytes = sizeof(indices);
-            myIndexBufferView.Format = DXGI_FORMAT_R16_UINT;
-        }
-        catch (...)
-        {
-            std::throw_with_nested(std::runtime_error("failed to create index buffer"));
+            myMesh.Init(myDevice.Get(), "bruvasdasdasd", vertices, indices);
         }
         try
         {
@@ -497,26 +442,16 @@ void GraphicsEngine::OnUpdate(float aDeltaSeconds, float aTimeSeconds, const Mat
         myViewport.MinDepth = 0;
         myViewport.MaxDepth = 1;
     }
-
-    D3D12_RANGE range{ 0, 0 };
-    void* pData = nullptr;
-        
         
     cbInstanceStruct instance{};
     instance.transform = Mat4::TranslationMatrix(0.f, 0.f, 200);
-
-    myInstanceConstantBuffer->Map(0, &range, &pData);
-    std::memcpy(pData, &instance, sizeof(instance));
-    myInstanceConstantBuffer->Unmap(0, nullptr);
+    myInstanceConstantBuffer.Upload(instance);
 
     cbPassStruct pass{};
     pass.VP = aToViewMatrix * aToProjectionMatrix;
     pass.timeSeconds = aTimeSeconds;
     pass.deltaSeconds = aDeltaSeconds;
-
-    myPassConstantBuffer->Map(0, &range, &pData);
-    std::memcpy(pData, &pass, sizeof(pass));
-    myPassConstantBuffer->Unmap(0, nullptr);
+    myPassConstantBuffer.Upload(pass);
 }
 
 void GraphicsEngine::OnRender()
@@ -559,8 +494,8 @@ void GraphicsEngine::PopulateCommandList()
         ThrowIfFailed(myCommandList->Reset(myCommandAllocator.Get(), myPipelineState.Get()));
 
         myCommandList->SetGraphicsRootSignature(myRootSignature.Get());
-        myCommandList->SetGraphicsRootConstantBufferView(0, myInstanceConstantBuffer->GetGPUVirtualAddress());
-        myCommandList->SetGraphicsRootConstantBufferView(1, myPassConstantBuffer->GetGPUVirtualAddress());
+        myCommandList->SetGraphicsRootConstantBufferView(0, myInstanceConstantBuffer.GetGPUVirtualAddress());
+        myCommandList->SetGraphicsRootConstantBufferView(1, myPassConstantBuffer.GetGPUVirtualAddress());
         myCommandList->RSSetScissorRects(1, &myScissorRect);
         myCommandList->RSSetViewports(1, &myViewport);
 
@@ -578,13 +513,12 @@ void GraphicsEngine::PopulateCommandList()
         rtvHandle.ptr += (SIZE_T)myFrameIndex * (SIZE_T)myRtvDescriptorSize;
         myCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-
         const float clearColor[] = { 0.f, 0.2f, 0.4f, 1.f };
         myCommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
         myCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        myCommandList->IASetVertexBuffers(0, 1, &myVertexBufferView);
-        myCommandList->IASetIndexBuffer(&myIndexBufferView);
-        myCommandList->DrawIndexedInstanced(36, 1, 0, 0, 0); //TODO: maybe DrawIndexInstanced
+        myCommandList->IASetVertexBuffers(0, 1, &myMesh.VertexBufferView());
+        myCommandList->IASetIndexBuffer(&myMesh.IndexBufferView());
+        myCommandList->DrawIndexedInstanced(36, 1, 0, 0, 0);
 
         {
             D3D12_RESOURCE_BARRIER rtvResourceBarrier{};
