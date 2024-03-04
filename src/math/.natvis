@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="::Mat4" Inheritable="true">
+		<DisplayString Condition="m11==1 &amp;&amp; m12==0 &amp;&amp; m13==0 &amp;&amp; m14==0 &amp;&amp; m21==0 &amp;&amp; m22==1 &amp;&amp; m23==0 &amp;&amp; m24==0 &amp;&amp; m31==0 &amp;&amp; m32==0 &amp;&amp; m33==1 &amp;&amp; m34==0 &amp;&amp; m41==0 &amp;&amp; m42==0 &amp;&amp; m43==0 &amp;&amp; m44==1">Identity</DisplayString>
+		<DisplayString Condition="m11==0 &amp;&amp; m12==0 &amp;&amp; m13==0 &amp;&amp; m14==0 &amp;&amp; m21==0 &amp;&amp; m22==0 &amp;&amp; m23==0 &amp;&amp; m24==0 &amp;&amp; m31==0 &amp;&amp; m32==0 &amp;&amp; m33==0 &amp;&amp; m34==0 &amp;&amp; m41==0 &amp;&amp; m42==0 &amp;&amp; m43==0 &amp;&amp; m44==0">Zero</DisplayString>
+		<DisplayString></DisplayString>
+		<Expand>
+			<Item Name="[m1]">&amp;m11,[4]na</Item>
+			<Item Name="[m2]">&amp;m21,[4]na</Item>
+			<Item Name="[m3]">&amp;m31,[4]na</Item>
+			<Item Name="[m4]">&amp;m41,[4]na</Item>
+			<Item Name="[m11]">m11</Item>
+			<Item Name="[m12]">m12</Item>
+			<Item Name="[m13]">m13</Item>
+			<Item Name="[m14]">m14</Item>
+			<Item Name="[m21]">m11</Item>
+			<Item Name="[m22]">m12</Item>
+			<Item Name="[m23]">m13</Item>
+			<Item Name="[m24]">m14</Item>
+			<Item Name="[m31]">m11</Item>
+			<Item Name="[m32]">m12</Item>
+			<Item Name="[m33]">m13</Item>
+			<Item Name="[m34]">m14</Item>
+			<Item Name="[m41]">m11</Item>
+			<Item Name="[m42]">m12</Item>
+			<Item Name="[m43]">m13</Item>
+			<Item Name="[m44]">m14</Item>
+		</Expand>
+	</Type>
+	<!--<Type Name="::Mat3" Inheritable="true">
+		<DisplayString Condition="m11==1 &amp;&amp; m12==0 &amp;&amp; m13==0 &amp;&amp; m21==0 &amp;&amp; m22==1 &amp;&amp; m23==0 &amp;&amp; m31==0 &amp;&amp; m32==0 &amp;&amp; m33==1">Identity</DisplayString>
+		<DisplayString Condition="m11==0 &amp;&amp; m12==0 &amp;&amp; m13==0 &amp;&amp; m21==0 &amp;&amp; m22==0 &amp;&amp; m23==0 &amp;&amp; m31==0 &amp;&amp; m32==0 &amp;&amp; m33==0">Zero</DisplayString>
+		<DisplayString></DisplayString>
+		<Expand>
+			<Item Name="[m1]">&amp;m11,[3]na</Item>
+			<Item Name="[m2]">&amp;m21,[3]na</Item>
+			<Item Name="[m3]">&amp;m31,[3]na</Item>
+			<Item Name="[m11]">m11</Item>
+			<Item Name="[m12]">m12</Item>
+			<Item Name="[m13]">m13</Item>
+			<Item Name="[m21]">m11</Item>
+			<Item Name="[m22]">m12</Item>
+			<Item Name="[m23]">m13</Item>
+			<Item Name="[m31]">m11</Item>
+			<Item Name="[m32]">m12</Item>
+			<Item Name="[m33]">m13</Item>
+		</Expand>
+	</Type>-->
+</AutoVisualizer>

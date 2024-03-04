@@ -1,24 +1,79 @@
 #include "pch.h"
-#include "GraphicsEngine.h"
+#include "Camera.h"
+#include "Clock.h"
+#include "GraphicsEngine/GraphicsEngine.h"
+#include "Window.h"
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProcW(hWnd, message, wParam, lParam);
+        case WM_INPUT:
+        {
+            static RAWINPUT raw{};
+            unsigned int size = sizeof(RAWINPUT);
+            if (::GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, &raw, &size, sizeof(RAWINPUTHEADER)) != static_cast<unsigned int>(-1))
+            {
+                if (raw.header.dwType == RIM_TYPEMOUSE)
+                {
+                    globalWindow.mouse.delta.x += static_cast<FLOAT>(static_cast<INT16>(raw.data.mouse.lLastX));
+                    globalWindow.mouse.delta.y += static_cast<FLOAT>(static_cast<INT16>(raw.data.mouse.lLastY));
+                }
+            }
+            break;
+        }
+        case WM_KEYDOWN:
+        {
+            globalWindow.keyboard.w |= (wParam == 0x57);
+            globalWindow.keyboard.a |= (wParam == 0x41);
+            globalWindow.keyboard.s |= (wParam == 0x53);
+            globalWindow.keyboard.d |= (wParam == 0x44);
+            globalWindow.keyboard.e |= (wParam == 0x45);
+            globalWindow.keyboard.q |= (wParam == 0x51);
+            break;
+        }
+        case WM_KEYUP:
+        {
+            globalWindow.keyboard.w &= (wParam != 0x57);
+            globalWindow.keyboard.a &= (wParam != 0x41);
+            globalWindow.keyboard.s &= (wParam != 0x53);
+            globalWindow.keyboard.d &= (wParam != 0x44);
+            globalWindow.keyboard.e &= (wParam != 0x45);
+            globalWindow.keyboard.q &= (wParam != 0x51);
+            break;
+        }
+        case WM_SIZE:
+        {
+            globalWindow.size.x = static_cast<FLOAT>(GET_X_LPARAM(lParam));
+            globalWindow.size.y = static_cast<FLOAT>(GET_Y_LPARAM(lParam));
+            globalWindow.resize = globalWindow.size;
+            globalWindow.aspectRatio = globalWindow.size.x / globalWindow.size.y;
+            break;
+        }
+        case WM_MOUSEMOVE:
+        {
+            globalWindow.mouse.pos.x = static_cast<FLOAT>(GET_X_LPARAM(lParam));
+            globalWindow.mouse.pos.y = static_cast<FLOAT>(GET_Y_LPARAM(lParam));
+            break;
+        }
+        case WM_DESTROY:
+        {
+            PostQuitMessage(0);
+            break;
+        }
+        default:
+        {
+            return DefWindowProcW(hWnd, message, wParam, lParam);
+        }
     }
     return 0;
 }
 
 void GuardedMain()
 {
-    const HINSTANCE hInstance = GetModuleHandleW(NULL);
-
     {
+        const HINSTANCE hInstance = GetModuleHandleW(NULL);
+
         WNDCLASSEXW wcex{};
         wcex.cbSize = sizeof(WNDCLASSEX);
         wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -33,22 +88,33 @@ void GuardedMain()
         wcex.lpszClassName = L"comrade-klick";
         wcex.hIconSm = NULL;
         RegisterClassExW(&wcex);
-    }
-
-    HWND hwnd{};
-    {
-        hwnd = CreateWindowExW(0L, L"comrade-klick",
+    
+        globalWindow.hwnd = CreateWindowExW(0L, L"comrade-klick",
             L"comrade-klick", WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL,
             NULL, hInstance, NULL);
+        ShowWindow(globalWindow.hwnd, SW_SHOWMAXIMIZED);
+        UpdateWindow(globalWindow.hwnd);
 
-        ShowWindow(hwnd, SW_SHOWMAXIMIZED);
-        UpdateWindow(hwnd);
+
+        enum {
+            HID_USAGE_PAGE_GENERIC = 0x01,
+            HID_USAGE_GENERIC_MOUSE = 0x02
+        };
+        RAWINPUTDEVICE device[1] = {};
+        device[0].dwFlags = RIDEV_INPUTSINK;
+        device[0].hwndTarget = globalWindow.hwnd;
+        device[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+        device[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+        ThrowIfFailed(RegisterRawInputDevices(device, 1, sizeof(device)));
     }
 
-    
+    Camera camera;
+    camera.OnInitialize();
     GraphicsEngine graphicsEngine;
-    graphicsEngine.OnInitialize(hwnd);
+    graphicsEngine.OnInitialize();
+    Clock clock;
+    clock.OnInitialize();
     bool running = true;
     while (running)
     {
@@ -59,8 +125,15 @@ void GuardedMain()
             DispatchMessageW(&msg);
             running &= (msg.message != WM_QUIT);
         }
-        graphicsEngine.OnUpdate();
+        clock.OnUpdate();
+        const float deltaSeconds = clock.GetDeltaSeconds(), 
+                    timeSeconds = clock.GetTimeSeconds();
+
+        camera.OnUpdate(deltaSeconds);
+        graphicsEngine.OnUpdate(deltaSeconds, timeSeconds, camera.ToViewMatrix(), camera.ToProjectionMatrix());
         graphicsEngine.OnRender();
+        globalWindow.resize = Vec2::Zero;
+        globalWindow.mouse.delta = Vec2::Zero;
     }
     graphicsEngine.OnDestroy();
 }

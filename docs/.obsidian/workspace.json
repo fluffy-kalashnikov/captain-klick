@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "daily/2024-02-26.md",
+                "file": "daily/2024-03-04.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "daily/2024-02-26.md",
+                "file": "daily/2024-03-04.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "daily/2024-02-26.md",
+                "file": "daily/2024-03-04.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "daily/2024-02-26.md"
+                "file": "daily/2024-03-04.md"
               }
             }
           },
@@ -156,7 +156,11 @@
   },
   "active": "2e7e6903224db290",
   "lastOpenFiles": [
+    "daily/2024-02-29.md",
+    "daily/2024-03-04.md",
+    "daily/2024-02-28.md",
     "planning.md",
+    "daily/2024-02-27.md",
     "daily/2024-02-26.md",
     "Untitled.md",
     "daily/2024-02-22.md",

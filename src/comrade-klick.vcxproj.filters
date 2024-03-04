@@ -21,7 +21,7 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsEngine.cpp">
+    <ClCompile Include="GraphicsEngine\GraphicsEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GuardedMain.cpp">
@@ -30,12 +30,21 @@
     <ClCompile Include="Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Clock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsEngine.h">
+    <ClInclude Include="GraphicsEngine\GraphicsEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="d3dx12.h">
@@ -44,31 +53,49 @@
     <ClInclude Include="Console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="math\Vec3.h">
+    <ClInclude Include="Math\Vec3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="math\Vec4.h">
+    <ClInclude Include="Math\Vec4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="math\Vec2.h">
+    <ClInclude Include="Math\Vec2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Vertex.h">
+    <ClInclude Include="GraphicsEngine\Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cbFrame.h">
+    <ClInclude Include="HLSL\ConstantBuffers.hlsli.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="math\Mat4.h">
+    <ClInclude Include="Math\Mat4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Clock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Transform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vec1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="hlsl\Model_PS.hlsl" />
-    <FxCompile Include="hlsl\Model_VS.hlsl" />
+    <FxCompile Include="HLSL\Model_PS.hlsl" />
+    <FxCompile Include="HLSL\Model_VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="hlsl\Model.hlsli" />
-    <None Include="hlsl\slots.hlsli" />
+    <None Include="HLSL\Model.hlsli" />
+    <None Include="HLSL\slots.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="Math\.natvis" />
   </ItemGroup>
 </Project>

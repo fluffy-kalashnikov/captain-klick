@@ -1,6 +1,7 @@
 #pragma once
 #define WIN32_MEAN_AND_LEAN
-#include <Windows.h>
+#include <windows.h>
+#include <windowsx.h>
 #include <d3d.h>
 #include <d3dcommon.h>
 #include <d3dcompiler.h>

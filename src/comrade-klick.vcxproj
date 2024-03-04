@@ -62,6 +62,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -85,6 +86,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -98,37 +100,48 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Clock.cpp" />
     <ClCompile Include="Console.cpp" />
-    <ClCompile Include="GraphicsEngine.cpp" />
+    <ClCompile Include="GraphicsEngine\GraphicsEngine.cpp" />
     <ClCompile Include="GuardedMain.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cbFrame.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Clock.h" />
+    <ClInclude Include="HLSL\ConstantBuffers.hlsli.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="d3dx12.h" />
-    <ClInclude Include="GraphicsEngine.h" />
-    <ClInclude Include="math\Mat4.h" />
-    <ClInclude Include="math\Vec2.h" />
-    <ClInclude Include="math\Vec4.h" />
-    <ClInclude Include="math\Vec3.h" />
+    <ClInclude Include="GraphicsEngine\GraphicsEngine.h" />
+    <ClInclude Include="Math\Mat4.h" />
+    <ClInclude Include="Math\Transform.h" />
+    <ClInclude Include="Math\Vec1.h" />
+    <ClInclude Include="Math\Vec2.h" />
+    <ClInclude Include="Math\Vec4.h" />
+    <ClInclude Include="Math\Vec3.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Vertex.h" />
+    <ClInclude Include="GraphicsEngine\Vertex.h" />
+    <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="hlsl\Model_PS.hlsl">
+    <FxCompile Include="HLSL\Model_PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="hlsl\Model_VS.hlsl">
+    <FxCompile Include="HLSL\Model_VS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="hlsl\Model.hlsli" />
-    <None Include="hlsl\slots.hlsli" />
+    <None Include="HLSL\Model.hlsli" />
+    <None Include="HLSL\slots.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="Math\.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
