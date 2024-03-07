@@ -131,7 +131,6 @@ void GuardedMain()
 
         camera.OnUpdate(deltaSeconds);
         graphicsEngine.OnUpdate(deltaSeconds, timeSeconds, camera.ToViewMatrix(), camera.ToProjectionMatrix());
-        graphicsEngine.OnRender();
         globalWindow.resize = Vec2::Zero;
         globalWindow.mouse.delta = Vec2::Zero;
     }

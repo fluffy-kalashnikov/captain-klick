@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "daily/2024-03-04.md",
+                "file": "daily/2024-03-07.md",
                 "mode": "source",
                 "source": false
               }
@@ -48,7 +48,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "direct3d",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -70,7 +70,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "a528cfbe99760af1",
@@ -86,7 +87,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "daily/2024-03-04.md",
+                "file": "daily/2024-03-07.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -103,7 +104,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "daily/2024-03-04.md",
+                "file": "daily/2024-03-07.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -126,7 +127,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "daily/2024-03-04.md"
+                "file": "daily/2024-03-07.md"
               }
             }
           },
@@ -155,13 +156,16 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "db86d129e97af076",
+  "active": "2e7e6903224db290",
   "lastOpenFiles": [
+    "daily/2024-03-05.md",
+    "daily/2024-03-06.md",
+    "daily/2024-03-07.md",
+    "daily/2024-03-04.md",
     "daily/2024-02-12.md",
     "whacko-hlsl-cpp-constant-buffers.png",
     "first-triangle.png",
     "first-cube.png",
-    "daily/2024-03-04.md",
     "daily/2024-02-29.md",
     "daily/2024-02-28.md",
     "planning.md",

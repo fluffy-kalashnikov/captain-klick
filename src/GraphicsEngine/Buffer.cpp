@@ -1,21 +1,40 @@
 #include "GraphicsEngine/Buffer.h"
 
-Buffer::Buffer() = default;
+Buffer::Buffer()
+    : myBlobByteSize(0)
+    , myBlobByteStride(0)
+{
+}
+
 Buffer::Buffer(Buffer&&) = default;
+
 Buffer::~Buffer() = default;
+
 Buffer& Buffer::operator=(Buffer&&) = default;
+
+UINT Buffer::SizeInBytes() const
+{
+    return myBlobByteSize;
+}
+
+UINT Buffer::StrideInBytes() const
+{
+    return myBlobByteStride;
+}
 
 D3D12_GPU_VIRTUAL_ADDRESS Buffer::GetGPUVirtualAddress()
 {
-    return myBufferGPU->GetGPUVirtualAddress();
+    return myBlobGPU->GetGPUVirtualAddress();
 }
 
-void Buffer::Upload(const void* aBlob, UINT aBlobByteSize)
+void Buffer::Upload(const void* aBlob, UINT aBlobByteSize, UINT aBlobByteStride)
 {
     D3D12_RANGE range{ 0, 0 };
     void* pData = nullptr;
 
-    myBufferGPU->Map(0, &range, &pData);
+    myBlobGPU->Map(0, &range, &pData);
     std::memcpy(pData, aBlob, aBlobByteSize);
-    myBufferGPU->Unmap(0, nullptr);
+    myBlobGPU->Unmap(0, nullptr);
+    myBlobByteSize = aBlobByteSize;
+    myBlobByteStride = aBlobByteStride;
 }
