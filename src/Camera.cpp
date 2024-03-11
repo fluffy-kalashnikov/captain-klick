@@ -6,6 +6,12 @@
 static constexpr float DEG_90 = 90.f * 3.14f / 180.f;
 
 
+Camera::Camera()
+	: myGravity(0)
+	, myGrounded(false)
+{
+}
+
 void Camera::OnInitialize()
 {
 	myTransform.translation.y = 200;
@@ -14,19 +20,55 @@ void Camera::OnInitialize()
 
 void Camera::OnUpdate(float aDeltaSeconds)
 {
-	Vec3 moveDelta{
+	if (globalWindow.keyboard.e)
+		__debugbreak();
+
+	//moving
+	Vec3 direction = myMoveVelocity;
+	direction.Normalize();
+
+	Vec3 acceleration{
 		static_cast<float>(globalWindow.keyboard.d - globalWindow.keyboard.a),
-		static_cast<float>(globalWindow.keyboard.e - globalWindow.keyboard.q),
+		0.f,
 		static_cast<float>(globalWindow.keyboard.w - globalWindow.keyboard.s)
 	};
-	moveDelta.Normalize();
-	moveDelta *= (200.f * aDeltaSeconds);
-	moveDelta = myTransform.TransformVector(moveDelta);
+	if (acceleration != Vec3::Zero)
+	{
+		acceleration.Normalize();
+		if ((acceleration | direction) <= 0.f)
+		{
+			acceleration *= 5.f;
+		}
+		acceleration *= (1600 * aDeltaSeconds);
+		acceleration = Mat4::TransformVector(acceleration, Mat4::YawMatrix(myTransform.orientation.y));
+		if (!myGrounded)
+		{
+			acceleration *= 0.4f;
+		}
 
-	myTransform.translation += moveDelta;
+		myMoveVelocity += acceleration;
+		float speedClamped = std::min(400.f, myMoveVelocity.Size());
+		myMoveVelocity.Normalize();
+		myMoveVelocity *= speedClamped;
+	}
+	else if (myGrounded)
+	{
+		const float speed = myMoveVelocity.Size();
+		myMoveVelocity.Normalize();
+		myMoveVelocity *= std::max(0.f, speed - 800 * aDeltaSeconds);
+	}
+
+	myTransform.translation += myMoveVelocity * aDeltaSeconds;
+
+	//std::cout << "vel x=" << myMoveVelocity.x << " y=" << myMoveVelocity.y << " z=" << myMoveVelocity.z
+	//	      << " acc x=" << acceleration.x << " y=" << acceleration.y << " z=" << acceleration.z << "\n";
+
+
+
+
+	//looking
 	myTransform.orientation.x += globalWindow.mouse.delta.y * 0.001f;
 	myTransform.orientation.y += globalWindow.mouse.delta.x * 0.001f;
-
 	if (myTransform.orientation.x > DEG_90)
 	{
 		myTransform.orientation.x = DEG_90;
@@ -35,6 +77,34 @@ void Camera::OnUpdate(float aDeltaSeconds)
 	{
 		myTransform.orientation.x = -DEG_90;
 	}
+
+
+
+
+
+
+	//falling
+	constexpr float eyeHeight = 150.f;
+	if (globalWindow.keyboard.space && myGrounded)
+	{
+		//jump
+		myGravity = 500.f;
+		myGrounded = false;
+	}
+	else if (myTransform.translation.y == eyeHeight && myGravity <= 0)
+	{
+		//ground
+		myGravity = 0;
+		myGrounded = true;
+	}
+	else
+	{
+		//fall
+		myGravity -= 1400.f * aDeltaSeconds;
+	}
+	myTransform.translation.y = std::max(eyeHeight, myTransform.translation.y + myGravity * aDeltaSeconds);
+
+	std::cout << "pos y=" << myTransform.translation.y << " gravity=" << myGravity << "\n";
 }
 
 Mat4 Camera::ToViewMatrix() const

@@ -1,11 +1,12 @@
 #pragma once
 #include "Math/Transform.h"
 #include "Math/Vec2.h"
+#include "Math/Vec3.h"
 
 class Camera
 {
 public:
-	Camera() = default;
+	Camera();
 	Camera(const Camera&) = delete;
 	~Camera() = default;
 	Camera& operator=(const Camera&) = delete;
@@ -15,5 +16,8 @@ public:
 	Mat4 ToProjectionMatrix() const;
 private:
 	Transform myTransform;
+	Vec3 myMoveVelocity;
+	float myGravity;
+	bool myGrounded;
 };
 

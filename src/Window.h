@@ -17,7 +17,8 @@ inline struct Window
 			 s{}, 
 			 d{}, 
 			 e{}, 
-			 q{};
+			 q{},
+			space{};
 	} keyboard;
 	struct Mouse
 	{

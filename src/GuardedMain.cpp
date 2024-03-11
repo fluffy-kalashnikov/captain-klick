@@ -30,6 +30,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             globalWindow.keyboard.d |= (wParam == 0x44);
             globalWindow.keyboard.e |= (wParam == 0x45);
             globalWindow.keyboard.q |= (wParam == 0x51);
+            globalWindow.keyboard.space |= (wParam == VK_SPACE);
 
             if (wParam == VK_ESCAPE)
             {
@@ -45,6 +46,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             globalWindow.keyboard.d &= (wParam != 0x44);
             globalWindow.keyboard.e &= (wParam != 0x45);
             globalWindow.keyboard.q &= (wParam != 0x51);
+            globalWindow.keyboard.space &= (wParam != VK_SPACE);
             break;
         }
         case WM_SIZE:
