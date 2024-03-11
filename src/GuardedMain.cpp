@@ -30,6 +30,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             globalWindow.keyboard.d |= (wParam == 0x44);
             globalWindow.keyboard.e |= (wParam == 0x45);
             globalWindow.keyboard.q |= (wParam == 0x51);
+
+            if (wParam == VK_ESCAPE)
+            {
+                PostQuitMessage(0);
+            }
             break;
         }
         case WM_KEYUP:
@@ -59,6 +64,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_DESTROY:
         {
             PostQuitMessage(0);
+            break;
+        }
+        case WM_ACTIVATE:
+        {
+            if (wParam == WA_INACTIVE)
+            {
+                ShowCursor(TRUE);
+            }
+            else
+            {
+                RECT mouseClipRect{};
+                mouseClipRect.left = static_cast<LONG>(globalWindow.size.x / 2.f);
+                mouseClipRect.top = static_cast<LONG>(globalWindow.size.y / 2.f);
+                mouseClipRect.right = static_cast<LONG>(globalWindow.size.x / 2.f);
+                mouseClipRect.bottom = static_cast<LONG>(globalWindow.size.y / 2.f);
+                ClipCursor(&mouseClipRect);
+                ShowCursor(FALSE);
+            }
             break;
         }
         default:
@@ -101,12 +124,12 @@ void GuardedMain()
             HID_USAGE_PAGE_GENERIC = 0x01,
             HID_USAGE_GENERIC_MOUSE = 0x02
         };
-        RAWINPUTDEVICE device[1] = {};
-        device[0].dwFlags = RIDEV_INPUTSINK;
-        device[0].hwndTarget = globalWindow.hwnd;
-        device[0].usUsage = HID_USAGE_GENERIC_MOUSE;
-        device[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
-        ThrowIfFailed(RegisterRawInputDevices(device, 1, sizeof(device)));
+        RAWINPUTDEVICE device = {};
+        device.dwFlags = RIDEV_INPUTSINK;
+        device.hwndTarget = globalWindow.hwnd;
+        device.usUsage = HID_USAGE_GENERIC_MOUSE;
+        device.usUsagePage = HID_USAGE_PAGE_GENERIC;
+        ThrowIfFailed(RegisterRawInputDevices(&device, 1, sizeof(device)));
     }
 
     Camera camera;
