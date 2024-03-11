@@ -16,17 +16,17 @@
 
 struct cbInstanceStruct
 {
+	float4 color;
 	float4x4 transform;
-	float1 PADDING0[48];
+	float1 PADDING0[44];
 };
 
 struct cbPassStruct
 {
+	float4x4 VP;
 	float1 deltaSeconds;
 	float1 timeSeconds;
-	float2 PADDING0;
-	float4x4 VP;
-	float1 PADDING1[44];
+	float1 PADDING1[46];
 };
 
 #ifdef __cplusplus

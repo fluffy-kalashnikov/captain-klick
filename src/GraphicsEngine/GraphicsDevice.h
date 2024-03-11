@@ -14,6 +14,8 @@ public:
 	void Shutdown();
 	[[nodiscard]] ComPtr<ID3D12GraphicsCommandList> BeginFrame();
 	void EndFrame(ComPtr<ID3D12GraphicsCommandList>&& aCommandList);
+	template<class T>
+	Buffer CreateDefaultBuffer(const std::wstring& aName, const T& aBuffer);
 	template<class T, std::size_t N>
 	Buffer CreateDefaultBuffer(const std::wstring& aName, const T(&aBuffer)[N]);
 	template<class T>
@@ -24,6 +26,7 @@ private:
 	D3D12_VIEWPORT myViewport{};
 	/** pipeline */
 	ComPtr<ID3D12Debug1> myDebug;
+	ComPtr<ID3D12InfoQueue> myInfoQueue;
 	ComPtr<ID3D12Device> myDevice;
 	ComPtr<IDXGISwapChain3> mySwapChain;
 	ComPtr<IDXGIFactory> myFactory;
@@ -39,9 +42,9 @@ private:
 	ComPtr<ID3D12DescriptorHeap> myRtvHeap;
 	ComPtr<ID3D12DescriptorHeap> myDsvHeap;
 	ComPtr<ID3D12DescriptorHeap> myCbvSrvHeap;
-	SIZE_T myRtvDescriptorSize{};
-	SIZE_T myDsvDescriptorSize{};
-	SIZE_T myCbvSrvDescriptorSize{};
+	UINT myRtvDescriptorSize{};
+	UINT myDsvDescriptorSize{};
+	UINT myCbvSrvDescriptorSize{};
 	/** synchronization */
 	UINT myFrameIndex{};
 	HANDLE myFenceEvent{};
@@ -52,6 +55,13 @@ private:
 	Buffer CreateDefaultBuffer(const std::wstring& aName, const void* aBuffer, UINT aBufferByteSize, UINT aBufferByteStride);
 	Buffer CreateUploadBuffer(const std::wstring& aName, UINT aBufferByteSize, UINT aBufferByteStride);
 };
+
+template<class T>
+Buffer GraphicsDevice::CreateDefaultBuffer(const std::wstring& aName, const T& aBuffer)
+{
+	static_assert(std::is_trivially_copyable_v<T>);
+	return CreateDefaultBuffer(aName, &aBuffer, sizeof(aBuffer), sizeof(aBuffer));
+}
 
 template<class T, std::size_t N>
 Buffer GraphicsDevice::CreateDefaultBuffer(const std::wstring& aName, const T(&aBuffer)[N])

@@ -1,5 +1,6 @@
 #pragma once
 #define WIN32_MEAN_AND_LEAN
+#include <array>
 #include <windows.h>
 #include <windowsx.h>
 #include <d3d.h>

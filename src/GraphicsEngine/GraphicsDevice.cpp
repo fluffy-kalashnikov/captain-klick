@@ -5,9 +5,6 @@ void GraphicsDevice::Initialize()
 {
     InitDevice();
     InitPipeline();
-
-    ThrowIfFailed(myCommandAllocator->Reset());
-    ThrowIfFailed(myCommandList->Reset(myCommandAllocator.Get(), myPipelineState.Get()));
 }
 
 void GraphicsDevice::InitDevice()
@@ -17,13 +14,18 @@ void GraphicsDevice::InitDevice()
         ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debug)));
         ThrowIfFailed(debug.As(&myDebug));
         myDebug->EnableDebugLayer();
-        //myDebug->SetEnableGPUBasedValidation(true);
     }
 
     ThrowIfFailed(CreateDXGIFactory(IID_PPV_ARGS(&myFactory)));
     ThrowIfFailed(myFactory->EnumAdapters(0, &myAdapter));
     ThrowIfFailed(D3D12CreateDevice(myAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&myDevice)));
     myDevice->SetName(L"myDevice");
+
+    ThrowIfFailed(myDevice->QueryInterface(IID_PPV_ARGS(&myInfoQueue)));
+    ThrowIfFailed(myInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true));
+    ThrowIfFailed(myInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true));
+    ThrowIfFailed(myInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true));
+
     myCbvSrvDescriptorSize = myDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     myDsvDescriptorSize = myDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     myRtvDescriptorSize = myDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -78,54 +80,20 @@ void GraphicsDevice::InitDevice()
         ThrowIfFailed(myRtvHeap->SetName(L"myRtvHeap"));
     }
     {
-        D3D12_HEAP_PROPERTIES heapProperties{};
-        heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
-
-        D3D12_RESOURCE_DESC depthStencilDesc{};
-        depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-        depthStencilDesc.Alignment = 0;
-        depthStencilDesc.Width = static_cast<UINT64>(globalWindow.size.x);
-        depthStencilDesc.Height = static_cast<UINT>(globalWindow.size.y);
-        depthStencilDesc.DepthOrArraySize = 1;
-        depthStencilDesc.MipLevels = 1;
-        depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
-        depthStencilDesc.SampleDesc.Count = 1;
-        depthStencilDesc.SampleDesc.Quality = 0;
-        depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-        depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-
-        D3D12_CLEAR_VALUE clearValue{};
-        clearValue.DepthStencil.Depth = 1.f;
-        clearValue.DepthStencil.Stencil = 0;
-        clearValue.Format = DXGI_FORMAT_D32_FLOAT;
-        ThrowIfFailed(myDevice->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE,
-            &depthStencilDesc, D3D12_RESOURCE_STATE_COMMON, &clearValue, IID_PPV_ARGS(&myDepthStencilBuffer)));
-        ThrowIfFailed(myDepthStencilBuffer->SetName(L"myDepthStencilBuffer"));
-
-        myDevice->CreateDepthStencilView(myDepthStencilBuffer.Get(),
-            nullptr, myDsvHeap->GetCPUDescriptorHandleForHeapStart());
-    }
-    {
-        D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = myRtvHeap->GetCPUDescriptorHandleForHeapStart();
+        CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(myRtvHeap->GetCPUDescriptorHandleForHeapStart());
         for (UINT n = 0; n < FRAME_COUNT; n++)
         {
             ThrowIfFailed(mySwapChain->GetBuffer(n, IID_PPV_ARGS(&myBackBuffers[n])));
-            myDevice->CreateRenderTargetView(myBackBuffers[n].Get(), nullptr, rtvHandle);
-            rtvHandle.ptr += myRtvDescriptorSize;
-
+            myDevice->CreateRenderTargetView(myBackBuffers[n].Get(), nullptr, rtvHeapHandle);
             ThrowIfFailed(myBackBuffers[n]->SetName(L"myBackBuffers[x]"));
+
+            rtvHeapHandle.Offset(1, myRtvDescriptorSize);
         }
     }
-
-
-    ThrowIfFailed(myDevice->CreateCommandAllocator(
-        D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&myCommandAllocator)));
-    ThrowIfFailed(myCommandAllocator->SetName(L"myCommandAllocator"));
 }
 
 void GraphicsDevice::InitPipeline()
 {
-    try
     {
         D3D12_ROOT_PARAMETER rootParameters[2]{};
         {
@@ -179,12 +147,18 @@ void GraphicsDevice::InitPipeline()
             rootSignature->GetBufferSize(), IID_PPV_ARGS(&myRootSignature)));
         ThrowIfFailed(myRootSignature->SetName(L"myRootSignature"));
     }
-    catch (...)
+
+
+    ThrowIfFailed(myDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&myFence)));
+    ThrowIfFailed(myFence->SetName(L"myFence"));
+    myFenceValue = 1;
+    myFenceEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+    if (myFenceEvent == nullptr)
     {
-        std::throw_with_nested(std::runtime_error("failed to create root signature"));
+        ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
     }
 
-    try
+
     {
         ComPtr<ID3DBlob> defaultVsBlob, defaultPsBlob;
         ThrowIfFailed(D3DReadFileToBlob(L"Model_VS.cso", &defaultVsBlob));
@@ -245,8 +219,7 @@ void GraphicsDevice::InitPipeline()
         graphicsPipelineStateDesc.BlendState = noBlendDesc;
         graphicsPipelineStateDesc.SampleMask = UINT_MAX;
         graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
-        graphicsPipelineStateDesc.DepthStencilState.DepthEnable = FALSE;
-        graphicsPipelineStateDesc.DepthStencilState.StencilEnable = FALSE;
+        graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
         graphicsPipelineStateDesc.InputLayout = { inputElementDescs, sizeof(inputElementDescs) / sizeof(inputElementDescs[0]) };
         graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         graphicsPipelineStateDesc.NumRenderTargets = 1;
@@ -258,38 +231,47 @@ void GraphicsDevice::InitPipeline()
         ThrowIfFailed(myDevice->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&myPipelineState)));
         ThrowIfFailed(myPipelineState->SetName(L"myPipelineState"));
     }
-    catch (...)
-    {
-        std::throw_with_nested(std::runtime_error("failed to create graphics pipeline state"));
-    }
 
-    try
-    {
-        ThrowIfFailed(myDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
-            myCommandAllocator.Get(), myPipelineState.Get(), IID_PPV_ARGS(&myCommandList)));
-        ThrowIfFailed(myCommandList->SetName(L"myCommandList"));
-        ThrowIfFailed(myCommandList->Close());
-    }
-    catch (...)
-    {
-        std::throw_with_nested(std::runtime_error("failed to create command list"));
-    }
 
-    try
-    {
-        ThrowIfFailed(myDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&myFence)));
-        ThrowIfFailed(myFence->SetName(L"myFence"));
-        myFenceValue = 1;
-        myFenceEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-        if (myFenceEvent == nullptr)
-        {
-            ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-        }
-    }
-    catch (...)
-    {
-        std::throw_with_nested(std::runtime_error("failed to create fence"));
-    }
+    ThrowIfFailed(myDevice->CreateCommandAllocator(
+        D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&myCommandAllocator)));
+    ThrowIfFailed(myCommandAllocator->SetName(L"myCommandAllocator"));
+
+    ThrowIfFailed(myDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
+        myCommandAllocator.Get(), myPipelineState.Get(), IID_PPV_ARGS(&myCommandList)));
+    ThrowIfFailed(myCommandList->SetName(L"myCommandList"));
+
+
+    D3D12_HEAP_PROPERTIES heapProperties{};
+    heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+    D3D12_RESOURCE_DESC depthStencilDesc{};
+    depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    depthStencilDesc.Alignment = 0;
+    depthStencilDesc.Width = static_cast<UINT64>(globalWindow.size.x);
+    depthStencilDesc.Height = static_cast<UINT>(globalWindow.size.y);
+    depthStencilDesc.DepthOrArraySize = 1;
+    depthStencilDesc.MipLevels = 1;
+    depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+    depthStencilDesc.SampleDesc.Count = 1;
+    depthStencilDesc.SampleDesc.Quality = 0;
+    depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+    D3D12_CLEAR_VALUE depthStencilClearValue{};
+    depthStencilClearValue.DepthStencil.Depth = 1.f;
+    depthStencilClearValue.DepthStencil.Stencil = 0;
+    depthStencilClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+    ThrowIfFailed(myDevice->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE,
+        &depthStencilDesc, D3D12_RESOURCE_STATE_COMMON, &depthStencilClearValue, IID_PPV_ARGS(&myDepthStencilBuffer)));
+    ThrowIfFailed(myDepthStencilBuffer->SetName(L"myDepthStencilBuffer"));
+
+    myDevice->CreateDepthStencilView(myDepthStencilBuffer.Get(),
+        nullptr, myDsvHeap->GetCPUDescriptorHandleForHeapStart());
+
+    D3D12_RESOURCE_BARRIER depthStencilBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        myDepthStencilBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+    myCommandList->ResourceBarrier(1, &depthStencilBarrier);
 }
 
 void GraphicsDevice::Shutdown()
@@ -320,8 +302,6 @@ ComPtr<ID3D12GraphicsCommandList> GraphicsDevice::BeginFrame()
     }
 
     myCommandList->SetGraphicsRootSignature(myRootSignature.Get());
-    //myCommandList->SetGraphicsRootConstantBufferView(0, myInstanceConstantBuffer.GetGPUVirtualAddress());
-    //myCommandList->SetGraphicsRootConstantBufferView(1, myPassConstantBuffer.GetGPUVirtualAddress());
     myCommandList->RSSetScissorRects(1, &myScissorRect);
     myCommandList->RSSetViewports(1, &myViewport);
 
@@ -335,12 +315,17 @@ ComPtr<ID3D12GraphicsCommandList> GraphicsDevice::BeginFrame()
         rtvResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
         myCommandList->ResourceBarrier(1, &rtvResourceBarrier);
     }
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle(myRtvHeap->GetCPUDescriptorHandleForHeapStart());
-    rtvHandle.ptr += (SIZE_T)myFrameIndex * (SIZE_T)myRtvDescriptorSize;
-    myCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+
+
+    CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHeapHandle(myDsvHeap->GetCPUDescriptorHandleForHeapStart());
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(myRtvHeap->GetCPUDescriptorHandleForHeapStart());
+    rtvHeapHandle.Offset(myFrameIndex, myRtvDescriptorSize);
+    myCommandList->OMSetRenderTargets(1, &rtvHeapHandle, FALSE, &dsvHeapHandle);
 
     const float clearColor[4] = { 0.f, 0.2f, 0.4f, 1.f };
-    myCommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+    myCommandList->ClearRenderTargetView(rtvHeapHandle, clearColor, 0, nullptr);
+    myCommandList->ClearDepthStencilView(dsvHeapHandle, 
+        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1, 0, 0, nullptr);
     return std::move(myCommandList);
 }
 
@@ -370,7 +355,6 @@ void GraphicsDevice::EndFrame(ComPtr<ID3D12GraphicsCommandList>&& aCommandList)
 
         ThrowIfFailed(mySwapChain->Present(1, 0));
         WaitForGPU();
-
         ThrowIfFailed(myCommandAllocator->Reset());
         ThrowIfFailed(myCommandList->Reset(myCommandAllocator.Get(), myPipelineState.Get()));
     }

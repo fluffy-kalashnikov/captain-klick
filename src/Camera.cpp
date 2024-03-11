@@ -8,6 +8,12 @@ static constexpr float DEG_90 = 90.f * 3.14f / 180.f;
 
 void Camera::OnInitialize()
 {
+	myTransform.translation.x = 200;
+	myTransform.translation.y = 200;
+	myTransform.translation.z = -200;
+
+	myTransform.orientation.x = 3.14f/4.f;
+	myTransform.orientation.y = 3.14f/4.f;
 }
 
 void Camera::OnUpdate(float aDeltaSeconds)

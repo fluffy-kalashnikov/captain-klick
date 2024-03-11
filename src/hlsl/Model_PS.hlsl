@@ -4,6 +4,6 @@
 PixelOut main(VertexOut input)
 {
     PixelOut output;
-    output.color = input.color * (sin(cbPass.timeSeconds) * 0.5 + 0.5);
+    output.color = cbInstance.color;
     return output;
 }

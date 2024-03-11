@@ -9,6 +9,5 @@ VertexOut main(VertexIn input)
     
     VertexOut output;
     output.position = position;
-    output.color = input.color;
 	return output; 
 }

@@ -14,7 +14,7 @@ public:
 	void OnDestroy();
 private:
 	GraphicsDevice myGraphicsDevice;
-	Buffer myInstanceConstantBuffer;
+	std::vector<Buffer> myInstanceConstantBuffers;
 	Buffer myPassConstantBuffer;
 	Mesh myMesh;
 };
