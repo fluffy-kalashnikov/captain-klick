@@ -60,9 +60,6 @@ void Camera::OnUpdate(float aDeltaSeconds)
 
 	myTransform.translation += myMoveVelocity * aDeltaSeconds;
 
-	//std::cout << "vel x=" << myMoveVelocity.x << " y=" << myMoveVelocity.y << " z=" << myMoveVelocity.z
-	//	      << " acc x=" << acceleration.x << " y=" << acceleration.y << " z=" << acceleration.z << "\n";
-
 
 
 
@@ -77,7 +74,6 @@ void Camera::OnUpdate(float aDeltaSeconds)
 	{
 		myTransform.orientation.x = -DEG_90;
 	}
-
 
 
 

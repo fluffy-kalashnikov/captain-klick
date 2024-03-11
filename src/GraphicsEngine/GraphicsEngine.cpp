@@ -103,6 +103,8 @@ void GraphicsEngine::OnUpdate(float aDeltaSeconds, float aTimeSeconds, const Mat
     ComPtr<ID3D12GraphicsCommandList> commandList = myGraphicsDevice.BeginFrame();
         
     commandList->SetGraphicsRootConstantBufferView(1, myPassConstantBuffer.GetGPUVirtualAddress());
+
+
     for (Buffer& instanceConstantBuffer : myInstanceConstantBuffers)
     {
         commandList->SetGraphicsRootConstantBufferView(0, instanceConstantBuffer.GetGPUVirtualAddress());

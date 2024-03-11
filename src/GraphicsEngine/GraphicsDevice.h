@@ -37,7 +37,7 @@ private:
 	ComPtr<ID3D12RootSignature> myRootSignature;
 	ComPtr<ID3D12Resource> myBackBuffers[FRAME_COUNT];
 	ComPtr<ID3D12Resource> myDepthStencilBuffer;
-	ComPtr<ID3D12PipelineState> myPipelineState;
+	ComPtr<ID3D12PipelineState> myCubePipelineState;
 	/** resources */
 	ComPtr<ID3D12DescriptorHeap> myRtvHeap;
 	ComPtr<ID3D12DescriptorHeap> myDsvHeap;

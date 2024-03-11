@@ -111,10 +111,13 @@
   <ItemGroup>
     <FxCompile Include="HLSL\Model_PS.hlsl" />
     <FxCompile Include="HLSL\Model_VS.hlsl" />
+    <FxCompile Include="hlsl\Work_VS.hlsl" />
+    <FxCompile Include="hlsl\Work_PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\Model.hlsli" />
     <None Include="HLSL\slots.hlsli" />
+    <None Include="hlsl\Work.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Math\.natvis" />
