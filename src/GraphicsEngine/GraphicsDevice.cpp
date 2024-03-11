@@ -152,134 +152,57 @@ void GraphicsDevice::InitDevice()
 
 void GraphicsDevice::InitPipeline()
 {
+    D3D12_ROOT_PARAMETER rootParameters[2]{};
     {
-        D3D12_ROOT_PARAMETER rootParameters[2]{};
-        {
-            D3D12_ROOT_PARAMETER& instanceBuffer = rootParameters[0];
-            instanceBuffer.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-            instanceBuffer.Descriptor.ShaderRegister = 0; //TODO: set to actual constant buffer descriptor
-            instanceBuffer.Descriptor.RegisterSpace = 0;
-            instanceBuffer.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+        D3D12_ROOT_PARAMETER& instanceBuffer = rootParameters[0];
+        instanceBuffer.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+        instanceBuffer.Descriptor.ShaderRegister = 0; //TODO: set to actual constant buffer descriptor
+        instanceBuffer.Descriptor.RegisterSpace = 0;
+        instanceBuffer.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-            D3D12_ROOT_PARAMETER& passBuffer = rootParameters[1];
-            passBuffer.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-            passBuffer.Descriptor.ShaderRegister = 1; //TODO: set to actual constant buffer descriptor
-            passBuffer.Descriptor.RegisterSpace = 0;
-            passBuffer.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-        }
-
-        D3D12_STATIC_SAMPLER_DESC staticSamplerDescs[1]{};
-        {
-            D3D12_STATIC_SAMPLER_DESC& trilinearWrap = staticSamplerDescs[0];
-            trilinearWrap.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-            trilinearWrap.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-            trilinearWrap.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-            trilinearWrap.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-            trilinearWrap.MipLODBias = 0;
-            trilinearWrap.MaxAnisotropy = 1;
-            trilinearWrap.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-            trilinearWrap.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
-            trilinearWrap.MinLOD = -D3D12_FLOAT32_MAX;
-            trilinearWrap.MaxLOD = D3D12_FLOAT32_MAX;
-            trilinearWrap.ShaderRegister = 0;
-            trilinearWrap.RegisterSpace = 0;
-            trilinearWrap.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-        }
-
-        D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
-        rootSignatureDesc.NumParameters = sizeof(rootParameters) / sizeof(rootParameters[0]);
-        rootSignatureDesc.pParameters = rootParameters;
-        rootSignatureDesc.NumStaticSamplers = sizeof(staticSamplerDescs) / sizeof(staticSamplerDescs[0]);
-        rootSignatureDesc.pStaticSamplers = staticSamplerDescs;
-        rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
-            | D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS
-            | D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS
-            | D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS
-            | D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS;
-
-        ComPtr<ID3DBlob> rootSignature, rootSignatureError;
-        ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc,
-            D3D_ROOT_SIGNATURE_VERSION_1_0, &rootSignature, &rootSignatureError));
-
-        ThrowIfFailed(myDevice->CreateRootSignature(0, rootSignature->GetBufferPointer(),
-            rootSignature->GetBufferSize(), IID_PPV_ARGS(&myRootSignature)));
-        ThrowIfFailed(myRootSignature->SetName(L"myRootSignature"));
+        D3D12_ROOT_PARAMETER& passBuffer = rootParameters[1];
+        passBuffer.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+        passBuffer.Descriptor.ShaderRegister = 1; //TODO: set to actual constant buffer descriptor
+        passBuffer.Descriptor.RegisterSpace = 0;
+        passBuffer.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
     }
 
-
-
+    D3D12_STATIC_SAMPLER_DESC staticSamplerDescs[1]{};
     {
-        ComPtr<ID3DBlob> defaultVsBlob, defaultPsBlob;
-        ThrowIfFailed(D3DReadFileToBlob(L"Model_VS.cso", &defaultVsBlob));
-        ThrowIfFailed(D3DReadFileToBlob(L"Model_PS.cso", &defaultPsBlob));
-
-        D3D12_INPUT_ELEMENT_DESC inputElementDescs[] = {
-            { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-            { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        };
-
-        D3D12_RASTERIZER_DESC rasterizerDesc{};
-        rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-        rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-        rasterizerDesc.FrontCounterClockwise = FALSE;
-        rasterizerDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
-        rasterizerDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
-        rasterizerDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-        rasterizerDesc.DepthClipEnable = TRUE;
-        rasterizerDesc.MultisampleEnable = FALSE;
-        rasterizerDesc.AntialiasedLineEnable = FALSE;
-        rasterizerDesc.ForcedSampleCount = 0;
-        rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-
-        D3D12_BLEND_DESC noBlendDesc{};
-        noBlendDesc.AlphaToCoverageEnable = FALSE;
-        noBlendDesc.IndependentBlendEnable = FALSE;
-        noBlendDesc.RenderTarget[0].BlendEnable = FALSE;
-        noBlendDesc.RenderTarget[0].LogicOpEnable = FALSE;
-        noBlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
-        noBlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;
-        noBlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-        noBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-        noBlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-        noBlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-        noBlendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
-        noBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-        D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-        depthStencilDesc.DepthEnable = TRUE;
-        depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-        depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-        depthStencilDesc.StencilEnable = FALSE;
-        depthStencilDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
-        depthStencilDesc.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
-        depthStencilDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-        depthStencilDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-        depthStencilDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-        depthStencilDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-        depthStencilDesc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-        depthStencilDesc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-        depthStencilDesc.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-        depthStencilDesc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-        
-        D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-        graphicsPipelineStateDesc.pRootSignature = myRootSignature.Get();
-        graphicsPipelineStateDesc.VS = CD3DX12_SHADER_BYTECODE(defaultVsBlob->GetBufferPointer(), defaultVsBlob->GetBufferSize());
-        graphicsPipelineStateDesc.PS = CD3DX12_SHADER_BYTECODE(defaultPsBlob->GetBufferPointer(), defaultPsBlob->GetBufferSize());
-        graphicsPipelineStateDesc.BlendState = noBlendDesc;
-        graphicsPipelineStateDesc.SampleMask = UINT_MAX;
-        graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
-        graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
-        graphicsPipelineStateDesc.InputLayout = { inputElementDescs, sizeof(inputElementDescs) / sizeof(inputElementDescs[0]) };
-        graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        graphicsPipelineStateDesc.NumRenderTargets = 1;
-        graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-        graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-        graphicsPipelineStateDesc.SampleDesc.Count = 1;
-        graphicsPipelineStateDesc.SampleDesc.Quality = 0;
-
-        ThrowIfFailed(myDevice->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&myCubePipelineState)));
-        ThrowIfFailed(myCubePipelineState->SetName(L"myCubePipelineState"));
+        D3D12_STATIC_SAMPLER_DESC& trilinearWrap = staticSamplerDescs[0];
+        trilinearWrap.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+        trilinearWrap.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+        trilinearWrap.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+        trilinearWrap.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+        trilinearWrap.MipLODBias = 0;
+        trilinearWrap.MaxAnisotropy = 1;
+        trilinearWrap.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+        trilinearWrap.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+        trilinearWrap.MinLOD = -D3D12_FLOAT32_MAX;
+        trilinearWrap.MaxLOD = D3D12_FLOAT32_MAX;
+        trilinearWrap.ShaderRegister = 0;
+        trilinearWrap.RegisterSpace = 0;
+        trilinearWrap.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
     }
+
+    D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
+    rootSignatureDesc.NumParameters = sizeof(rootParameters) / sizeof(rootParameters[0]);
+    rootSignatureDesc.pParameters = rootParameters;
+    rootSignatureDesc.NumStaticSamplers = sizeof(staticSamplerDescs) / sizeof(staticSamplerDescs[0]);
+    rootSignatureDesc.pStaticSamplers = staticSamplerDescs;
+    rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
+        | D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS
+        | D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS
+        | D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS
+        | D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS;
+
+    ComPtr<ID3DBlob> rootSignature, rootSignatureError;
+    ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc,
+        D3D_ROOT_SIGNATURE_VERSION_1_0, &rootSignature, &rootSignatureError));
+
+    ThrowIfFailed(myDevice->CreateRootSignature(0, rootSignature->GetBufferPointer(),
+        rootSignature->GetBufferSize(), IID_PPV_ARGS(&myRootSignature)));
+    ThrowIfFailed(myRootSignature->SetName(L"myRootSignature")); 
 }
 
 void GraphicsDevice::Shutdown()
@@ -303,7 +226,6 @@ ComPtr<ID3D12GraphicsCommandList> GraphicsDevice::BeginFrame()
     }
 
     myCommandList->SetGraphicsRootSignature(myRootSignature.Get());
-    myCommandList->SetPipelineState(myCubePipelineState.Get());
     myCommandList->RSSetScissorRects(1, &myScissorRect);
     myCommandList->RSSetViewports(1, &myViewport);
 
@@ -357,6 +279,15 @@ void GraphicsDevice::EndFrame(ComPtr<ID3D12GraphicsCommandList>&& aCommandList)
     WaitForGPU();
     ThrowIfFailed(myCommandAllocator->Reset());
     ThrowIfFailed(myCommandList->Reset(myCommandAllocator.Get(), myCubePipelineState.Get()));
+}
+
+ComPtr<ID3D12PipelineState> GraphicsDevice::CreateGraphicsPipelineState(const std::wstring& aName,
+    const D3D12_GRAPHICS_PIPELINE_STATE_DESC& aPipelineStateDesc)
+{
+    ComPtr<ID3D12PipelineState> pipelineState;
+    ThrowIfFailed(myDevice->CreateGraphicsPipelineState(&aPipelineStateDesc, IID_PPV_ARGS(&pipelineState)));
+    ThrowIfFailed(pipelineState->SetName(aName.c_str()));
+    return pipelineState;
 }
 
 Buffer GraphicsDevice::CreateDefaultBuffer(const std::wstring& aName, 
@@ -456,6 +387,11 @@ Buffer GraphicsDevice::CreateUploadBuffer(const std::wstring& aName,
     buffer.myBlobByteSize = aBufferByteSize;
     buffer.myBlobByteStride = aBufferByteStride;
     return buffer;
+}
+
+ID3D12RootSignature* GraphicsDevice::RootSignature()
+{
+    return myRootSignature.Get();
 }
 
 void GraphicsDevice::WaitForGPU()

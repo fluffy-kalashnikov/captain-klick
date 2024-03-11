@@ -14,12 +14,15 @@ public:
 	void Shutdown();
 	[[nodiscard]] ComPtr<ID3D12GraphicsCommandList> BeginFrame();
 	void EndFrame(ComPtr<ID3D12GraphicsCommandList>&& aCommandList);
+	ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(const std::wstring& aName,
+		const D3D12_GRAPHICS_PIPELINE_STATE_DESC& aPipelineStateDesc);
 	template<class T>
 	Buffer CreateDefaultBuffer(const std::wstring& aName, const T& aBuffer);
 	template<class T, std::size_t N>
 	Buffer CreateDefaultBuffer(const std::wstring& aName, const T(&aBuffer)[N]);
 	template<class T>
 	Buffer CreateUploadBuffer(const std::wstring& aName);
+	ID3D12RootSignature* RootSignature();
 	void WaitForGPU();
 private:
 	D3D12_RECT myScissorRect{};

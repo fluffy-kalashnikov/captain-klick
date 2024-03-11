@@ -17,4 +17,6 @@ private:
 	std::vector<Buffer> myInstanceConstantBuffers;
 	Buffer myPassConstantBuffer;
 	Mesh myMesh;
+	ComPtr<ID3D12PipelineState> myWorkPipelineState;
+	ComPtr<ID3D12PipelineState> myCubePipelineState;
 };

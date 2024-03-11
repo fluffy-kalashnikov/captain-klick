@@ -20,9 +20,6 @@ void Camera::OnInitialize()
 
 void Camera::OnUpdate(float aDeltaSeconds)
 {
-	if (globalWindow.keyboard.e)
-		__debugbreak();
-
 	//moving
 	Vec3 direction = myMoveVelocity;
 	direction.Normalize();
