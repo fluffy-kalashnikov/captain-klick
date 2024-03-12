@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "daily/2024-03-11.md",
+                "file": "daily/2024-03-12.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "daily/2024-03-11.md",
+                "file": "daily/2024-03-12.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "daily/2024-03-11.md",
+                "file": "daily/2024-03-12.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "daily/2024-03-11.md"
+                "file": "daily/2024-03-12.md"
               }
             }
           },
@@ -156,11 +156,13 @@
   },
   "active": "2e7e6903224db290",
   "lastOpenFiles": [
-    "cube-arena-v1.png",
-    "cube-fixed-depth-stencil.png",
-    "daily/2024-03-07.md",
-    "daily/2024-03-11.md",
+    "descriptor.md",
     "cubes-drawn-over-each-other.png",
+    "cube-fixed-depth-stencil.png",
+    "cube-arena-v1.png",
+    "daily/2024-03-12.md",
+    "daily/2024-03-11.md",
+    "daily/2024-03-07.md",
     "planning.md",
     "daily/2024-03-05.md",
     "daily/2024-03-06.md",
@@ -183,11 +185,9 @@
     "daily/2024-02-15.md",
     "root-signature.md",
     "root-parameter.md",
-    "descriptor.md",
     "resource-barriers.md",
     "planning.pdf",
     "async-reprojection.md",
-    "gpu-preemption.md",
     "daily"
   ]
 }
