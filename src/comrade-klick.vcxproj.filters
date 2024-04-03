@@ -36,7 +36,7 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Window.cpp">
+    <ClCompile Include="InputHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GraphicsEngine\Mesh.cpp">
@@ -46,6 +46,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GraphicsEngine\GraphicsDevice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsEngine\GraphicsSwapChain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsEngine\GraphicsGlobals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsEngine\GraphicsQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -74,9 +83,6 @@
     <ClInclude Include="GraphicsEngine\Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HLSL\ConstantBuffers.hlsli.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Math\Mat4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -89,7 +95,7 @@
     <ClInclude Include="Math\Transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Window.h">
+    <ClInclude Include="InputHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Math\Vec1.h">
@@ -107,6 +113,21 @@
     <ClInclude Include="GraphicsEngine\GraphicsDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GraphicsEngine\GraphicsSwapChain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsEngine\GraphicsGlobals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HLSL\includeConstantBuffers.hlsli.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsEngine\GraphicsQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Exception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="HLSL\Model_PS.hlsl" />
@@ -116,8 +137,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\Model.hlsli" />
-    <None Include="HLSL\slots.hlsli" />
     <None Include="hlsl\Work.hlsli" />
+    <None Include="hlsl\includeSlots.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Math\.natvis" />

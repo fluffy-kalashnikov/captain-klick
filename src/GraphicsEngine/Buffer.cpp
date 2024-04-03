@@ -29,10 +29,10 @@ D3D12_GPU_VIRTUAL_ADDRESS Buffer::GetGPUVirtualAddress()
 
 void Buffer::Upload(const void* aBlob, UINT aBlobByteSize, UINT aBlobByteStride)
 {
-    D3D12_RANGE range{ 0, 0 };
+    CD3DX12_RANGE readRange(0, 0);
     void* pData = nullptr;
 
-    myBlobGPU->Map(0, &range, &pData);
+    myBlobGPU->Map(0, &readRange, &pData);
     std::memcpy(pData, aBlob, aBlobByteSize);
     myBlobGPU->Unmap(0, nullptr);
     myBlobByteSize = aBlobByteSize;

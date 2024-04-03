@@ -100,6 +100,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GraphicsEngine\GraphicsQueue.cpp" />
     <ClCompile Include="GraphicsEngine\GraphicsDevice.cpp" />
     <ClCompile Include="GraphicsEngine\Buffer.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -107,19 +108,25 @@
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="GraphicsEngine\GraphicsEngine.cpp" />
     <ClCompile Include="GraphicsEngine\Mesh.cpp" />
+    <ClCompile Include="GraphicsEngine\GraphicsSwapChain.cpp" />
+    <ClCompile Include="GraphicsEngine\GraphicsGlobals.cpp" />
     <ClCompile Include="GuardedMain.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="Window.cpp" />
+    <ClCompile Include="InputHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Exception.h" />
+    <ClInclude Include="GraphicsEngine\GraphicsQueue.h" />
     <ClInclude Include="GraphicsEngine\GraphicsDevice.h" />
     <ClInclude Include="GraphicsEngine\Buffer.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Clock.h" />
     <ClInclude Include="GraphicsEngine\ComPtr.h" />
     <ClInclude Include="GraphicsEngine\Mesh.h" />
-    <ClInclude Include="HLSL\ConstantBuffers.hlsli.h" />
+    <ClInclude Include="GraphicsEngine\GraphicsSwapChain.h" />
+    <ClInclude Include="GraphicsEngine\GraphicsGlobals.h" />
+    <ClInclude Include="HLSL\includeConstantBuffers.hlsli.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="GraphicsEngine\GraphicsEngine.h" />
@@ -131,7 +138,7 @@
     <ClInclude Include="Math\Vec3.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="GraphicsEngine\Vertex.h" />
-    <ClInclude Include="Window.h" />
+    <ClInclude Include="InputHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="HLSL\Model_PS.hlsl">
@@ -152,8 +159,8 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="hlsl\includeSlots.hlsli" />
     <None Include="HLSL\Model.hlsli" />
-    <None Include="HLSL\slots.hlsli" />
     <None Include="hlsl\Work.hlsli" />
   </ItemGroup>
   <ItemGroup>

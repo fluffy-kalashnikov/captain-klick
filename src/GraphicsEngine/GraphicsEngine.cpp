@@ -1,15 +1,47 @@
 #include "pch.h"
 #include "GraphicsEngine.h"
-#include "HLSL/ConstantBuffers.hlsli.h"
-#include "Window.h"
+#include "GraphicsGlobals.h"
+#include "HLSL/includeConstantBuffers.hlsli.h"
+#include "InputHandler.h"
 #include "Vertex.h"
 
+using namespace GraphicsGlobals;
 
 
-void GraphicsEngine::OnInitialize()
+void GraphicsEngine::Initialize(GraphicsDevice* aDevice)
 {
-    myGraphicsDevice.Initialize();
-    myPassConstantBuffer = myGraphicsDevice.CreateUploadBuffer<cbPassStruct>(L"cbPass");
+    myDevice = aDevice;
+    myDevice->Initialize();
+    myCommandAllocator = myDevice->CreateCommandAllocator(L"GraphicsEngine::myCommandAllocator");
+    myCommandList = myDevice->CreateGraphicsCommandList(L"GrapihcsEngine::myCommandList", nullptr, myCommandAllocator.Get());
+
+    D3D12_DESCRIPTOR_HEAP_DESC cbvSrvHeapDesc{};
+    cbvSrvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    cbvSrvHeapDesc.NumDescriptors = 512; //TODO: figure out actual number of shite required
+    cbvSrvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    myCbvSrvHeap = myDevice->CreateDescriptorHeap(L"GraphicsDevice::myCbvSrvHeap", cbvSrvHeapDesc);
+
+    D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
+    dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    dsvHeapDesc.NumDescriptors = 1;
+    dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    myDsvHeap = myDevice->CreateDescriptorHeap(L"GraphicsDevice::myDsvHeap", dsvHeapDesc);
+
+    D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
+    rtvHeapDesc.NumDescriptors = 1;
+    rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    myRtvHeap = myDevice->CreateDescriptorHeap(L"GraphicsDevice::myRtvHeap", rtvHeapDesc);
+
+
+    myQueue.Initialize(myDevice);
+    GraphicsGlobals::Create(aDevice, myCommandList.Get());
+
+    //mySwapChain.Initialize(myDevice, &myQueue);
+
+
+
+    myPassConstantBuffer = myDevice->CreateUploadBuffer<cbPassStruct>(L"cbPass");
 
     const std::tuple<Vec3, Vec3, Vec3, Vec3> cubes[] = {
         /** rgb */
@@ -34,189 +66,101 @@ void GraphicsEngine::OnInitialize()
         const Mat4 transform = Mat4::TransformMatrix(location, rotation, scale);
 
         Buffer& buffer = myInstanceConstantBuffers.emplace_back();
-        buffer = myGraphicsDevice.CreateDefaultBuffer<cbInstanceStruct>(L"cbInstance", { color4, transform });
+        buffer = myDevice->CreateDefaultBuffer<cbInstanceStruct>(L"cbInstance", myCommandList.Get(), { color4, transform });
     }
-
-
-    const Vertex vertices[24] = {
-        //top
-        { -50, 50, 50 },
-        {  50, 50, 50 },
-        {  50, 50,-50 },
-        { -50, 50,-50 },
-        //right
-        { 50, 50,-50 },
-        { 50, 50, 50 },
-        { 50,-50, 50 },
-        { 50,-50,-50 },
-        //front
-        { -50, 50,-50 },
-        {  50, 50,-50 },
-        {  50,-50,-50 },
-        { -50,-50,-50 },
-        //left
-        { -50, 50, 50 },
-        { -50, 50,-50 },
-        { -50,-50,-50 },
-        { -50,-50, 50 },
-        //back
-        {  50, 50, 50 },
-        { -50, 50, 50 },
-        { -50,-50, 50 },
-        {  50,-50, 50 },
-        //bottom
-        {  50,-50,-50 },
-        {  50,-50, 50 },
-        { -50,-50, 50 },
-        { -50,-50,-50 }
-    };
-    const Index indices[36] = {
-        0, 1, 2,
-        2, 3, 0,
-        4, 5, 6,
-        6, 7, 4,
-        8, 9, 10,
-        10, 11, 8,
-        12, 13, 14,
-        14, 15, 12,
-        16, 17, 18,
-        18, 19, 16,
-        20, 21, 22,
-        22, 23, 20
-    };
-    Buffer vertexBuffer, indexBuffer;
-    indexBuffer = myGraphicsDevice.CreateDefaultBuffer(L"cube index buffer", indices);
-    vertexBuffer = myGraphicsDevice.CreateDefaultBuffer(L"cube vertex buffer", vertices);
-    myMesh.Init(L"cube mesh", std::move(vertexBuffer), std::move(indexBuffer));
-
-
-
-
-
-
-
-    D3D12_RASTERIZER_DESC rasterizerDesc{};
-    rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-    rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-    rasterizerDesc.FrontCounterClockwise = FALSE;
-    rasterizerDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
-    rasterizerDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
-    rasterizerDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-    rasterizerDesc.DepthClipEnable = TRUE;
-    rasterizerDesc.MultisampleEnable = FALSE;
-    rasterizerDesc.AntialiasedLineEnable = FALSE;
-    rasterizerDesc.ForcedSampleCount = 0;
-    rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-
-    D3D12_BLEND_DESC noBlendDesc{};
-    noBlendDesc.AlphaToCoverageEnable = FALSE;
-    noBlendDesc.IndependentBlendEnable = FALSE;
-    noBlendDesc.RenderTarget[0].BlendEnable = FALSE;
-    noBlendDesc.RenderTarget[0].LogicOpEnable = FALSE;
-    noBlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
-    noBlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;
-    noBlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-    noBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-    noBlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-    noBlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-    noBlendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
-    noBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-    D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-    depthStencilDesc.DepthEnable = TRUE;
-    depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-    depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-    depthStencilDesc.StencilEnable = FALSE;
-    depthStencilDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
-    depthStencilDesc.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
-    depthStencilDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-    depthStencilDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-    depthStencilDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-    depthStencilDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-    depthStencilDesc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-    depthStencilDesc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-    depthStencilDesc.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-    depthStencilDesc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-    graphicsPipelineStateDesc.pRootSignature = myGraphicsDevice.RootSignature();
-    graphicsPipelineStateDesc.BlendState = noBlendDesc;
-    graphicsPipelineStateDesc.SampleMask = UINT_MAX;
-    graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
-    graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
-    graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    graphicsPipelineStateDesc.NumRenderTargets = 1;
-    graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-    graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-    graphicsPipelineStateDesc.SampleDesc.Count = 1;
-    graphicsPipelineStateDesc.SampleDesc.Quality = 0;
-
-
-    {
-        ComPtr<ID3DBlob> workVs, workPs;
-        ThrowIfFailed(D3DReadFileToBlob(L"Work_VS.cso", &workVs));
-        ThrowIfFailed(D3DReadFileToBlob(L"Work_PS.cso", &workPs));
-
-        graphicsPipelineStateDesc.DepthStencilState.DepthEnable = FALSE;
-        graphicsPipelineStateDesc.VS = CD3DX12_SHADER_BYTECODE(workVs->GetBufferPointer(), workVs->GetBufferSize());
-        graphicsPipelineStateDesc.PS = CD3DX12_SHADER_BYTECODE(workPs->GetBufferPointer(), workPs->GetBufferSize());
-        myWorkPipelineState = myGraphicsDevice.CreateGraphicsPipelineState(L"myWorkPipelineState", graphicsPipelineStateDesc);
-    }
-    {
-        D3D12_INPUT_ELEMENT_DESC inputElementDescs[] = {
-            { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-            { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        };
-
-        ComPtr<ID3DBlob> modelVs, modelPs;
-        ThrowIfFailed(D3DReadFileToBlob(L"Model_VS.cso", &modelVs));
-        ThrowIfFailed(D3DReadFileToBlob(L"Model_PS.cso", &modelPs));
-
-        graphicsPipelineStateDesc.InputLayout = { inputElementDescs, sizeof(inputElementDescs) / sizeof(inputElementDescs[0]) };
-        graphicsPipelineStateDesc.VS = CD3DX12_SHADER_BYTECODE(modelVs->GetBufferPointer(), modelVs->GetBufferSize());
-        graphicsPipelineStateDesc.PS = CD3DX12_SHADER_BYTECODE(modelPs->GetBufferPointer(), modelPs->GetBufferSize());
-        graphicsPipelineStateDesc.DepthStencilState.DepthEnable = TRUE;
-        myCubePipelineState = myGraphicsDevice.CreateGraphicsPipelineState(L"myCubePipelineState", graphicsPipelineStateDesc);
-    }
-
-    myGraphicsDevice.WaitForGPU();
 }
 
-void GraphicsEngine::OnUpdate(float aDeltaSeconds, float aTimeSeconds, const Mat4& aToViewMatrix, const Mat4& aToProjectionMatrix)
+void GraphicsEngine::Update(const GraphicsSwapChain* aSwapChain, float /*aDeltaSeconds*/, float /*aTimeSeconds*/, const Mat4& /*aToViewMatrix*/, const Mat4& /*aToProjectionMatrix*/)
 {
-    cbPassStruct pass{};
-    pass.VP = aToViewMatrix * aToProjectionMatrix;
-    pass.timeSeconds = aTimeSeconds;
-    pass.deltaSeconds = aDeltaSeconds;
-    myPassConstantBuffer.Upload(pass);
+    if (aSwapChain->GetHeight() < 4 && aSwapChain->GetWidth() < 4)
+    {
+        return;
+    }
+    if (aSwapChain->IsResizing())
+    {
+        const UINT width = aSwapChain->GetWidth(),
+                   height = aSwapChain->GetHeight();
+
+        myScissorRect.right = width;
+        myScissorRect.bottom = height;
+        myViewport.Width = static_cast<float>(width);
+        myViewport.Height = static_cast<float>(height);
+        myViewport.MinDepth = 0;
+        myViewport.MaxDepth = 1;
+        Resize(width, height);
+    }
+
+    const float clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
+    myCommandList->RSSetScissorRects(1, &myScissorRect);
+    myCommandList->RSSetViewports(1, &myViewport);
+    myCommandList->ClearRenderTargetView(myRtvHeap->GetCPUDescriptorHandleForHeapStart(), clearColor, 0, nullptr);
+    myCommandList->ClearDepthStencilView(myDsvHeap->GetCPUDescriptorHandleForHeapStart(),
+        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
 
 
 
 
-    ComPtr<ID3D12GraphicsCommandList> commandList = myGraphicsDevice.BeginFrame();
+
+    //cbPassStruct pass{};
+    //pass.cameraV = aToViewMatrix;
+    //pass.cameraP = aToProjectionMatrix;
+    //pass.cameraVP = pass.cameraV * pass.cameraP;
+    //pass.timeSeconds = aTimeSeconds;
+    //pass.deltaSeconds = aDeltaSeconds;
+    //myPassConstantBuffer.Upload(pass);
+
+    //myGraphicsDevice.WaitForGPU();
     
-    commandList->SetPipelineState(myWorkPipelineState.Get());
-    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    for (int n = 0; n < 2000; n++)
-    {
-        commandList->DrawInstanced(4, 1, 0, 0);
-    }
+    //commandList->SetPipelineState(globalWorkPipeline.Get());
+    //commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    //for (int n = 0; n < 2000; n++)
+    //{
+    //    commandList->DrawInstanced(4, 1, 0, 0);
+    //}
 
-    commandList->SetPipelineState(myCubePipelineState.Get());
-    commandList->SetGraphicsRootConstantBufferView(1, myPassConstantBuffer.GetGPUVirtualAddress());
-    for (Buffer& instanceConstantBuffer : myInstanceConstantBuffers)
-    {
-        commandList->SetGraphicsRootConstantBufferView(0, instanceConstantBuffer.GetGPUVirtualAddress());
-        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        commandList->IASetVertexBuffers(0, 1, &myMesh.VertexBufferView());
-        commandList->IASetIndexBuffer(&myMesh.IndexBufferView());
-        commandList->DrawIndexedInstanced(36, 1, 0, 0, 0);
-    }
+    //commandList->SetPipelineState(globalModelPipeline.Get());
+    //commandList->SetGraphicsRootConstantBufferView(1, myPassConstantBuffer.GetGPUVirtualAddress());
+    //for (Buffer& instanceConstantBuffer : myInstanceConstantBuffers)
+    //{
+    //    commandList->SetGraphicsRootConstantBufferView(0, instanceConstantBuffer.GetGPUVirtualAddress());
+    //    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    //    commandList->IASetVertexBuffers(0, 1, &globalCubeMesh.VertexBufferView());
+    //    commandList->IASetIndexBuffer(&globalCubeMesh.IndexBufferView());
+    //    commandList->DrawIndexedInstanced(36, 1, 0, 0, 0);
+    //}
 
-    myGraphicsDevice.EndFrame(std::move(commandList));
+
+
+
+    ThrowIfFailed(myCommandList->Close());
+    myQueue.ExecuteCommandList(myCommandList);
+    myQueue.WaitForIdle();
+    ThrowIfFailed(myCommandAllocator->Reset());
+    ThrowIfFailed(myCommandList->Reset(myCommandAllocator.Get(), nullptr));
+    //TODO: indicate to swapchain that the texture has been rendered and that we want to switch which texture is used for display
 }
 
-void GraphicsEngine::OnDestroy()
+void GraphicsEngine::Resize(const UINT aWidth, const UINT aHeight)
 {
-    myGraphicsDevice.Shutdown();
+    if (aWidth != 0 && aHeight != 0)
+    {
+        mySceneBuffer = myDevice->CreateTexture2D(L"GraphicsEngine::mySceneBuffer", aWidth, aHeight);
+        myDepthStencilBuffer = myDevice->CreateTexture2D(L"GraphicsEngine::myDepthStencilBuffer", aWidth, aHeight,
+            DXGI_FORMAT_D32_FLOAT, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+
+        myDevice->CreateRenderTargetView(mySceneBuffer.Get(), myRtvHeap->GetCPUDescriptorHandleForHeapStart());
+        myDevice->CreateDepthStencilView(myDepthStencilBuffer.Get(), myDsvHeap->GetCPUDescriptorHandleForHeapStart());
+    }
+}
+
+void GraphicsEngine::Shutdown()
+{
+    myQueue.Signal();
+    myQueue.WaitForIdle();
+    GraphicsGlobals::Destroy();
+}
+
+GraphicsQueue& GraphicsEngine::GetGraphicsQueue()
+{
+    return myQueue;
 }

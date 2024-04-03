@@ -23,10 +23,12 @@ struct cbInstanceStruct
 
 struct cbPassStruct
 {
-	float4x4 VP;
+	float4x4 cameraV;
+	float4x4 cameraP;
+	float4x4 cameraVP;
 	float1 deltaSeconds;
 	float1 timeSeconds;
-	float1 PADDING1[46];
+	float1 PADDING1[14];
 };
 
 #ifdef __cplusplus

@@ -1,7 +1,9 @@
 #include "Camera.h"
 #include "Math/Vec3.h"
 #include <iostream>
-#include "Window.h"
+#include "InputHandler.h"
+#undef min
+#undef max
 
 static constexpr float DEG_90 = 90.f * 3.14f / 180.f;
 
@@ -25,9 +27,9 @@ void Camera::OnUpdate(float aDeltaSeconds)
 	direction.Normalize();
 
 	Vec3 acceleration{
-		static_cast<float>(globalWindow.keyboard.d - globalWindow.keyboard.a),
+		static_cast<float>(globalInputHandler.keyboard.d - globalInputHandler.keyboard.a),
 		0.f,
-		static_cast<float>(globalWindow.keyboard.w - globalWindow.keyboard.s)
+		static_cast<float>(globalInputHandler.keyboard.w - globalInputHandler.keyboard.s)
 	};
 	if (acceleration != Vec3::Zero)
 	{
@@ -61,8 +63,8 @@ void Camera::OnUpdate(float aDeltaSeconds)
 
 
 	//looking
-	myTransform.orientation.x += globalWindow.mouse.delta.y * 0.001f;
-	myTransform.orientation.y += globalWindow.mouse.delta.x * 0.001f;
+	myTransform.orientation.x += globalInputHandler.mouse.delta.y * 0.001f;
+	myTransform.orientation.y += globalInputHandler.mouse.delta.x * 0.001f;
 	if (myTransform.orientation.x > DEG_90)
 	{
 		myTransform.orientation.x = DEG_90;
@@ -78,7 +80,7 @@ void Camera::OnUpdate(float aDeltaSeconds)
 
 	//falling
 	constexpr float eyeHeight = 150.f;
-	if (globalWindow.keyboard.space && myGrounded)
+	if (globalInputHandler.keyboard.space && myGrounded)
 	{
 		//jump
 		myGravity = 500.f;
@@ -96,8 +98,6 @@ void Camera::OnUpdate(float aDeltaSeconds)
 		myGravity -= 1400.f * aDeltaSeconds;
 	}
 	myTransform.translation.y = std::max(eyeHeight, myTransform.translation.y + myGravity * aDeltaSeconds);
-
-	std::cout << "pos y=" << myTransform.translation.y << " gravity=" << myGravity << "\n";
 }
 
 Mat4 Camera::ToViewMatrix() const
@@ -105,7 +105,7 @@ Mat4 Camera::ToViewMatrix() const
 	return myTransform.ToMatrix().Inverse();
 }
 
-Mat4 Camera::ToProjectionMatrix() const
+Mat4 Camera::ToProjectionMatrix(float aAspectRatio) const
 {
-	return Mat4::PerspectiveMatrix(DEG_90, globalWindow.aspectRatio, 10, 10000);
+	return Mat4::PerspectiveMatrix(DEG_90, aAspectRatio, 10, 10000);
 }

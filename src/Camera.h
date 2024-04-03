@@ -13,7 +13,7 @@ public:
 	void OnInitialize();
 	void OnUpdate(float aDeltaSeconds);
 	Mat4 ToViewMatrix() const;
-	Mat4 ToProjectionMatrix() const;
+	Mat4 ToProjectionMatrix(float aAspectRatio) const;
 private:
 	Transform myTransform;
 	Vec3 myMoveVelocity;

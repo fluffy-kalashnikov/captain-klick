@@ -1,6 +1,9 @@
 #pragma once
 #define WIN32_MEAN_AND_LEAN
 #include <array>
+#include <format>
+#include "GraphicsEngine/ComPtr.h"
+#include <iostream>
 #include <windows.h>
 #include <windowsx.h>
 #include <d3d.h>
@@ -9,11 +12,9 @@
 #include <d3d12.h>
 #include "d3dx12.h"
 #include <dxgi1_6.h>
-#include <format>
+#include <thread>
 #include <type_traits>
-#include "GraphicsEngine/ComPtr.h"
 #include <stdexcept>
-
 inline std::string ToString(HRESULT aCode)
 {
 	std::string error;
