@@ -29,7 +29,6 @@ void GuardedMain()
 
         //camera.Update(deltaSeconds);
         graphicsEngine.Update(&graphicsSwapChain, graphicsSwapChain.GetCamera());
-        globalInputHandler.EndFrame();
     }
     graphicsSwapChain.Shutdown();
     graphicsEngine.Shutdown();

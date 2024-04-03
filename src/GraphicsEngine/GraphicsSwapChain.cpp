@@ -6,6 +6,8 @@
 #include "GraphicsEngine/Vertex.h"
 #include "hlsl/includeConstantBuffers.hlsli.h"
 #include "InputHandler.h"
+#include "TimerScope.h"
+
 
 using namespace GraphicsGlobals;
 
@@ -241,18 +243,24 @@ void GraphicsSwapChain::GuardedThread(GraphicsDevice* aDevice, GraphicsQueue* aQ
 
 		ThrowIfFailed(myCommandList->Close());
 		myQueue.ExecuteCommandList(myCommandList);
-		myQueue.WaitForIdle();
+		{
+			TimerScope timerScope("GraphicsSwapChain");
+			myQueue.WaitForIdle();
+		}
 		ThrowIfFailed(mySwapChain->Present(1, 0));
 		ThrowIfFailed(myCommandAllocator->Reset());
 		ThrowIfFailed(myCommandList->Reset(myCommandAllocator.Get(), globalModelPipeline.Get()));
 		myFrameIndex = mySwapChain->GetCurrentBackBufferIndex();
 
 		myIsResizing = false;
+		globalInputHandler.EndFrame();
 	}
 }
 
 LRESULT GraphicsSwapChain::WndProc(UINT Msg, WPARAM wParam, LPARAM lParam)
 {
+	globalInputHandler.WndProcHandler(*this, Msg, wParam, lParam);
+
 	switch (Msg)
 	{
 		case WM_QUIT:
@@ -274,6 +282,5 @@ LRESULT GraphicsSwapChain::WndProc(UINT Msg, WPARAM wParam, LPARAM lParam)
 			return DefWindowProcW(myHwnd, Msg, wParam, lParam);
 		}
 	}
-	globalInputHandler.WndProcHandler(*this, Msg, wParam, lParam);
 	return 0;
 }

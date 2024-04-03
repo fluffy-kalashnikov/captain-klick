@@ -131,12 +131,12 @@ void GraphicsEngine::Update(const GraphicsSwapChain* aSwapChain, Camera /*aCamer
 
 
 
-
     ThrowIfFailed(myCommandList->Close());
     myQueue.ExecuteCommandList(myCommandList);
     myQueue.WaitForIdle();
     ThrowIfFailed(myCommandAllocator->Reset());
     ThrowIfFailed(myCommandList->Reset(myCommandAllocator.Get(), nullptr));
+  
     //TODO: indicate to swapchain that the texture has been rendered and that we want to switch which texture is used for display
 }
 

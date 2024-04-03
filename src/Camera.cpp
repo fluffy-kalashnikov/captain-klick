@@ -7,6 +7,7 @@
 
 static constexpr float DEG_90 = 90.f * 3.14f / 180.f;
 
+#include <sstream>
 
 Camera::Camera()
 	: myGravity(0)
@@ -56,6 +57,7 @@ void Camera::Update(float aDeltaSeconds)
 
 
 	aDeltaSeconds;
+
 	//looking
 	myTransform.orientation.x += globalInputHandler.mouse.delta.y * 0.001f;
 	myTransform.orientation.y += globalInputHandler.mouse.delta.x * 0.001f;

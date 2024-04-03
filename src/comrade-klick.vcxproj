@@ -114,6 +114,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="InputHandler.cpp" />
+    <ClCompile Include="TimerScope.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Exception.h" />
@@ -139,6 +140,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="GraphicsEngine\Vertex.h" />
     <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="TimerScope.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="HLSL\Model_PS.hlsl">
