@@ -7,8 +7,8 @@ public:
 	Clock(const Clock&) = delete;
 	~Clock() = default;
 	Clock& operator=(const Clock&) = delete;
-	void OnInitialize();
-	void OnUpdate();
+	void Initialize();
+	void Update();
 	float GetDeltaSeconds() const;
 	float GetTimeSeconds() const;
 private:

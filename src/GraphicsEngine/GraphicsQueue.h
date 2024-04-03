@@ -9,7 +9,7 @@ public:
 	GraphicsQueue(const GraphicsQueue&) = delete;
 	~GraphicsQueue();
 	GraphicsQueue& operator=(const GraphicsQueue&) = delete;
-	void Initialize(GraphicsDevice* aDevice);
+	void Initialize(GraphicsDevice* aDevice, const std::wstring& aName);
 	UINT64 Signal();
 	UINT64 ExecuteCommandList(const ComPtr<ID3D12CommandList>& aCommandList);
 	UINT64 PollCurrentFenceValue();

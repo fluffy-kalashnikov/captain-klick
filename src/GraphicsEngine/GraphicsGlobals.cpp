@@ -107,14 +107,11 @@ namespace GraphicsGlobals
             { "UV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         };
 
-        ComPtr<ID3DBlob> modelVs, modelPs, workVs, workPs, sprite3dVs, sprite3dGs, sprite3dPs;
+        ComPtr<ID3DBlob> modelVs, modelPs, workVs, workPs;
         ThrowIfFailed(D3DReadFileToBlob(L"Model_VS.cso", &modelVs));
         ThrowIfFailed(D3DReadFileToBlob(L"Model_PS.cso", &modelPs));
         ThrowIfFailed(D3DReadFileToBlob(L"Work_VS.cso", &workVs));
         ThrowIfFailed(D3DReadFileToBlob(L"Work_PS.cso", &workPs));
-        ThrowIfFailed(D3DReadFileToBlob(L"Sprite3D_VS.cso", &sprite3dVs));
-        ThrowIfFailed(D3DReadFileToBlob(L"Sprite3D_GS.cso", &sprite3dGs));
-        ThrowIfFailed(D3DReadFileToBlob(L"Sprite3D_PS.cso", &sprite3dPs));
 
         D3D12_GRAPHICS_PIPELINE_STATE_DESC modelPipelineStateDesc{};
         modelPipelineStateDesc.pRootSignature = globalRootSignature.Get();

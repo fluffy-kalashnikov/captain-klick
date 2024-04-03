@@ -15,10 +15,10 @@ GraphicsQueue::~GraphicsQueue()
     ::CloseHandle(myFenceEventHandle);
 }
 
-void GraphicsQueue::Initialize(GraphicsDevice* aDevice)
+void GraphicsQueue::Initialize(GraphicsDevice* aDevice, const std::wstring& aName)
 {
-    myCommandQueue = aDevice->CreateDirectCommandQueue(L"CommandQueue::myCommandQueue");
-    myFence = aDevice->CreateFence(L"CommandQueue::myFence");
+    myCommandQueue = aDevice->CreateDirectCommandQueue(aName);
+    myFence = aDevice->CreateFence(aName + L"'s fence");
     myLastCompletedFenceValue = 1;
     myNextFenceValue = 2;
     myFenceEventHandle = ::CreateEventW(nullptr, FALSE, FALSE, nullptr);

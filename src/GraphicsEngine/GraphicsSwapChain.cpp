@@ -74,14 +74,13 @@ void GraphicsSwapChain::GuardedThread(GraphicsDevice* aDevice, GraphicsQueue* aQ
 {
 	/*
 	TODO
-		- [x] call present here
-		- [x] maybe initialize window here
-		- [x] make pipeline state object
-		- [x] make root signature
-		- [x] make basic test shader
-		- [ ] finish rendering
+		- [ ] test
+			- [ ] bind vertex buffer of plane
+			- [ ] bind index buffer of plane
+			- [ ] try to render with the camera perspective of game except rotation only
+			- [ ] try to move sprite away
+		- [ ] proper
 			- [ ] swap 2 textures between display and reading
-			- [ ] create look-only camera in void
 			- [ ] render scene buffer on plane covering screen in world, not screenspace
 	*/
 	{
@@ -120,7 +119,7 @@ void GraphicsSwapChain::GuardedThread(GraphicsDevice* aDevice, GraphicsQueue* aQ
 		device.usUsagePage = HID_USAGE_PAGE_GENERIC;
 		ThrowIfFailed(::RegisterRawInputDevices(&device, 1, sizeof(device)));
 
-		myQueue.Initialize(aDevice);
+		myQueue.Initialize(aDevice, L"GraphicsSwapChain::myQueue");
 		mySwapChain = aDevice->CreateSwapChain(myQueue.GetID3D12CommandQueue(), hwnd, FRAME_COUNT);
 
 		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
@@ -148,12 +147,6 @@ void GraphicsSwapChain::GuardedThread(GraphicsDevice* aDevice, GraphicsQueue* aQ
 		}
 	}
 
-
-
-	//TODO: create depth stencil / depth stencil view, make resize with window
-
-
-
 	Buffer passConstantBuffer = aDevice->CreateUploadBuffer<cbPassStruct>(L"SwapChain cbPass");
 	Buffer instanceConstantBuffer = aDevice->CreateUploadBuffer<cbInstanceStruct>(L"SwapChain cbInstance");
 
@@ -175,6 +168,13 @@ void GraphicsSwapChain::GuardedThread(GraphicsDevice* aDevice, GraphicsQueue* aQ
 		}
 		if (myIsResizing)
 		{
+			myScissorRect.right = myWidth;
+			myScissorRect.bottom = myHeight;
+			myViewport.Width = static_cast<float>(myWidth);
+			myViewport.Height = static_cast<float>(myHeight);
+			myViewport.MinDepth = 0.0f;
+			myViewport.MaxDepth = 1.0f;
+
 			for (ComPtr<ID3D12Resource>& backBuffer : myBackBuffers)
 			{
 				backBuffer.Reset();
@@ -198,16 +198,17 @@ void GraphicsSwapChain::GuardedThread(GraphicsDevice* aDevice, GraphicsQueue* aQ
 			aDevice->CreateDepthStencilView(myDepthStencilBuffer.Get(), myDsvHeap->GetCPUDescriptorHandleForHeapStart());
 		}
 
+		myCamera.Update(0.01f);
 
 		cbInstanceStruct cbInstance;
-		cbInstance.transform = Mat4::Identity;
+		cbInstance.transform = Mat4::TranslationMatrix(0, 0, 200);
 		cbInstance.color = Vec4(1, 1, 1, 1);
 		instanceConstantBuffer.Upload(cbInstance);
 
 		cbPassStruct cbPass;
-		cbPass.cameraV;
-		cbPass.cameraP;
-		cbPass.cameraVP;
+		cbPass.cameraV = myCamera.ToViewMatrix();
+		cbPass.cameraP = myCamera.ToProjectionMatrix(myAspectRatio);
+		cbPass.cameraVP = cbPass.cameraV * cbPass.cameraP;
 		cbPass.deltaSeconds;
 		cbPass.timeSeconds;
 		passConstantBuffer.Upload(cbPass);
@@ -225,6 +226,7 @@ void GraphicsSwapChain::GuardedThread(GraphicsDevice* aDevice, GraphicsQueue* aQ
 		rtvHandle.Offset(myFrameIndex, aDevice->RtvDescriptorSize());
 		myCommandList->ResourceBarrier(1, &rtvPresentToTarget);
 		myCommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+		myCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
 		myCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 		myCommandList->RSSetScissorRects(1, &myScissorRect);
 		myCommandList->RSSetViewports(1, &myViewport);

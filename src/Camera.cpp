@@ -14,54 +14,48 @@ Camera::Camera()
 {
 }
 
-void Camera::OnInitialize()
-{
-	myTransform.translation.y = 200;
-	myTransform.translation.z = -900;
-}
-
-void Camera::OnUpdate(float aDeltaSeconds)
+void Camera::Update(float aDeltaSeconds)
 {
 	//moving
-	Vec3 direction = myMoveVelocity;
-	direction.Normalize();
+	//Vec3 direction = myMoveVelocity;
+	//direction.Normalize();
 
-	Vec3 acceleration{
-		static_cast<float>(globalInputHandler.keyboard.d - globalInputHandler.keyboard.a),
-		0.f,
-		static_cast<float>(globalInputHandler.keyboard.w - globalInputHandler.keyboard.s)
-	};
-	if (acceleration != Vec3::Zero)
-	{
-		acceleration.Normalize();
-		if ((acceleration | direction) <= 0.f)
-		{
-			acceleration *= 5.f;
-		}
-		acceleration *= (1600 * aDeltaSeconds);
-		acceleration = Mat4::TransformVector(acceleration, Mat4::YawMatrix(myTransform.orientation.y));
-		if (!myGrounded)
-		{
-			acceleration *= 0.4f;
-		}
+	//Vec3 acceleration{
+	//	static_cast<float>(globalInputHandler.keyboard.d - globalInputHandler.keyboard.a),
+	//	0.f,
+	//	static_cast<float>(globalInputHandler.keyboard.w - globalInputHandler.keyboard.s)
+	//};
+	//if (acceleration != Vec3::Zero)
+	//{
+	//	acceleration.Normalize();
+	//	if ((acceleration | direction) <= 0.f)
+	//	{
+	//		acceleration *= 5.f;
+	//	}
+	//	acceleration *= (1600 * aDeltaSeconds);
+	//	acceleration = Mat4::TransformVector(acceleration, Mat4::YawMatrix(myTransform.orientation.y));
+	//	if (!myGrounded)
+	//	{
+	//		acceleration *= 0.4f;
+	//	}
 
-		myMoveVelocity += acceleration;
-		float speedClamped = std::min(400.f, myMoveVelocity.Size());
-		myMoveVelocity.Normalize();
-		myMoveVelocity *= speedClamped;
-	}
-	else if (myGrounded)
-	{
-		const float speed = myMoveVelocity.Size();
-		myMoveVelocity.Normalize();
-		myMoveVelocity *= std::max(0.f, speed - 800 * aDeltaSeconds);
-	}
+	//	myMoveVelocity += acceleration;
+	//	float speedClamped = std::min(400.f, myMoveVelocity.Size());
+	//	myMoveVelocity.Normalize();
+	//	myMoveVelocity *= speedClamped;
+	//}
+	//else if (myGrounded)
+	//{
+	//	const float speed = myMoveVelocity.Size();
+	//	myMoveVelocity.Normalize();
+	//	myMoveVelocity *= std::max(0.f, speed - 800 * aDeltaSeconds);
+	//}
 
-	myTransform.translation += myMoveVelocity * aDeltaSeconds;
-
-
+	//myTransform.translation += myMoveVelocity * aDeltaSeconds;
 
 
+
+	aDeltaSeconds;
 	//looking
 	myTransform.orientation.x += globalInputHandler.mouse.delta.y * 0.001f;
 	myTransform.orientation.y += globalInputHandler.mouse.delta.x * 0.001f;
@@ -78,26 +72,26 @@ void Camera::OnUpdate(float aDeltaSeconds)
 
 
 
-	//falling
-	constexpr float eyeHeight = 150.f;
-	if (globalInputHandler.keyboard.space && myGrounded)
-	{
-		//jump
-		myGravity = 500.f;
-		myGrounded = false;
-	}
-	else if (myTransform.translation.y == eyeHeight && myGravity <= 0)
-	{
-		//ground
-		myGravity = 0;
-		myGrounded = true;
-	}
-	else
-	{
-		//fall
-		myGravity -= 1400.f * aDeltaSeconds;
-	}
-	myTransform.translation.y = std::max(eyeHeight, myTransform.translation.y + myGravity * aDeltaSeconds);
+	////falling
+	//constexpr float eyeHeight = 150.f;
+	//if (globalInputHandler.keyboard.space && myGrounded)
+	//{
+	//	//jump
+	//	myGravity = 500.f;
+	//	myGrounded = false;
+	//}
+	//else if (myTransform.translation.y == eyeHeight && myGravity <= 0)
+	//{
+	//	//ground
+	//	myGravity = 0;
+	//	myGrounded = true;
+	//}
+	//else
+	//{
+	//	//fall
+	//	myGravity -= 1400.f * aDeltaSeconds;
+	//}
+	//myTransform.translation.y = std::max(eyeHeight, myTransform.translation.y + myGravity * aDeltaSeconds);
 }
 
 Mat4 Camera::ToViewMatrix() const

@@ -7,11 +7,10 @@ class Camera
 {
 public:
 	Camera();
-	Camera(const Camera&) = delete;
+	Camera(const Camera&) = default;
 	~Camera() = default;
-	Camera& operator=(const Camera&) = delete;
-	void OnInitialize();
-	void OnUpdate(float aDeltaSeconds);
+	Camera& operator=(const Camera&) = default;
+	void Update(float aDeltaSeconds);
 	Mat4 ToViewMatrix() const;
 	Mat4 ToProjectionMatrix(float aAspectRatio) const;
 private:

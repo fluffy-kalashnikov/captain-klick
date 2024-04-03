@@ -8,7 +8,7 @@
         "type": "tabs",
         "children": [
           {
-            "id": "2e7e6903224db290",
+            "id": "095497ecea692abc",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -20,7 +20,7 @@
             }
           },
           {
-            "id": "f3ca54453bb10bb0",
+            "id": "930f545d932841a4",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -167,10 +167,16 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "f3ca54453bb10bb0",
+  "active": "930f545d932841a4",
   "lastOpenFiles": [
-    "planning.md",
+    "Pasted image 20240403170431.png",
     "daily/2024-04-03.md",
+    "actual-thank-you-pix.png",
+    "Pasted image 20240403133142.png",
+    "Pasted image 20240403133104 1.png",
+    "Pasted image 20240403133104.png",
+    "thank-you-pix.png",
+    "planning.md",
     "daily/2024-04-02.md",
     "daily/2024-03-28.md",
     "daily/2024-03-27.md",
@@ -197,13 +203,8 @@
     "daily/2024-02-20.md",
     "daily/2024-02-19.md",
     "daily/2024-02-15.md",
-    "daily/2024-02-14.md",
     "cubes-drawn-over-each-other.png",
     "cube-fixed-depth-stencil.png",
-    "cube-arena-v1.png",
-    "whacko-hlsl-cpp-constant-buffers.png",
-    "first-triangle.png",
-    "first-cube.png",
     "planning.pdf",
     "daily"
   ]

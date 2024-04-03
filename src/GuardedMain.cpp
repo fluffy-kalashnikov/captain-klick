@@ -9,8 +9,8 @@
 
 void GuardedMain()
 {
-    Camera camera;
-    camera.OnInitialize();
+    //Camera camera;
+    //camera.Initialize();
 
     GraphicsDevice graphicsDevice;
     graphicsDevice.Initialize();
@@ -20,16 +20,15 @@ void GuardedMain()
     graphicsSwapChain.Initialize(&graphicsDevice, &graphicsEngine.GetGraphicsQueue());
     
     Clock clock;
-    clock.OnInitialize();
+    clock.Initialize();
     while (graphicsSwapChain.IsRunning())
     {
-        clock.OnUpdate();
-        const float deltaSeconds = clock.GetDeltaSeconds(), 
-                    timeSeconds = clock.GetTimeSeconds();
+        clock.Update();
+        //const float deltaSeconds = clock.GetDeltaSeconds(), 
+        //            timeSeconds = clock.GetTimeSeconds();
 
-        camera.OnUpdate(deltaSeconds);
-        graphicsEngine.Update(&graphicsSwapChain, deltaSeconds, timeSeconds, camera.ToViewMatrix(), 
-            camera.ToProjectionMatrix(graphicsSwapChain.GetAspectRatio()));
+        //camera.Update(deltaSeconds);
+        graphicsEngine.Update(&graphicsSwapChain, graphicsSwapChain.GetCamera());
         globalInputHandler.EndFrame();
     }
     graphicsSwapChain.Shutdown();

@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include "Camera.h"
 #include "Math/Mat4.h"
 #include "Math/Vec2.h"
 #include "GraphicsEngine/Mesh.h"
@@ -11,7 +12,7 @@ class GraphicsEngine
 public:
 	static constexpr UINT FRAME_COUNT = 2;
 	void Initialize(GraphicsDevice* aDevice);
-	void Update(const GraphicsSwapChain* aSwapChain, float aDeltaSeconds, float aTimeSeconds, const Mat4& aToViewMatrix, const Mat4& aToProjectionMatrix);
+	void Update(const GraphicsSwapChain* aSwapChain, Camera aCamera);
 	void Resize(UINT aWidth, UINT aHeight);
 	void Shutdown();
 	GraphicsQueue& GetGraphicsQueue();

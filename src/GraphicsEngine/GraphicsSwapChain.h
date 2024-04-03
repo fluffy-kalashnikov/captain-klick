@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "Mesh.h"
 #include "GraphicsEngine/GraphicsQueue.h"
+#include "Camera.h"
 
 class GraphicsDevice;
 class GraphicsQueue;
@@ -18,17 +19,17 @@ public:
 	void Shutdown();
 	UINT GetWidth() const;
 	UINT GetHeight() const;
-	float GetAspectRatio() const;
+	const Camera& GetCamera() const;
 	bool IsResizing() const;
 	bool IsRunning() const;
 private:
-	//GraphicsDevice* myDevice;
 	HWND myHwnd;
 	UINT myWidth;
 	UINT myHeight;
 	float myAspectRatio;
 	bool myIsResizing;
 	bool myIsRunning;
+	Camera myCamera;
 	std::thread myThread;
 	GraphicsQueue myQueue;
 	D3D12_RECT myScissorRect{};
@@ -58,9 +59,9 @@ inline UINT GraphicsSwapChain::GetHeight() const
 	return myHeight;
 }
 
-inline float GraphicsSwapChain::GetAspectRatio() const
+inline const Camera& GraphicsSwapChain::GetCamera() const
 {
-	return myAspectRatio;
+	return myCamera;
 }
 
 inline bool GraphicsSwapChain::IsResizing() const

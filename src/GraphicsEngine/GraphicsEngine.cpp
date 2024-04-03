@@ -17,24 +17,24 @@ void GraphicsEngine::Initialize(GraphicsDevice* aDevice)
 
     D3D12_DESCRIPTOR_HEAP_DESC cbvSrvHeapDesc{};
     cbvSrvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    cbvSrvHeapDesc.NumDescriptors = 512; //TODO: figure out actual number of shite required
+    cbvSrvHeapDesc.NumDescriptors = 512;
     cbvSrvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    myCbvSrvHeap = myDevice->CreateDescriptorHeap(L"GraphicsDevice::myCbvSrvHeap", cbvSrvHeapDesc);
+    myCbvSrvHeap = myDevice->CreateDescriptorHeap(L"GraphicsEngine::myCbvSrvHeap", cbvSrvHeapDesc);
 
     D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
     dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
     dsvHeapDesc.NumDescriptors = 1;
     dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    myDsvHeap = myDevice->CreateDescriptorHeap(L"GraphicsDevice::myDsvHeap", dsvHeapDesc);
+    myDsvHeap = myDevice->CreateDescriptorHeap(L"GraphicsEngine::myDsvHeap", dsvHeapDesc);
 
     D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
     rtvHeapDesc.NumDescriptors = 1;
     rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    myRtvHeap = myDevice->CreateDescriptorHeap(L"GraphicsDevice::myRtvHeap", rtvHeapDesc);
+    myRtvHeap = myDevice->CreateDescriptorHeap(L"GraphicsEngine::myRtvHeap", rtvHeapDesc);
 
 
-    myQueue.Initialize(myDevice);
+    myQueue.Initialize(myDevice, L"GraphicsEngine::myQueue");
     GraphicsGlobals::Create(aDevice, myCommandList.Get());
 
     //mySwapChain.Initialize(myDevice, &myQueue);
@@ -70,7 +70,7 @@ void GraphicsEngine::Initialize(GraphicsDevice* aDevice)
     }
 }
 
-void GraphicsEngine::Update(const GraphicsSwapChain* aSwapChain, float /*aDeltaSeconds*/, float /*aTimeSeconds*/, const Mat4& /*aToViewMatrix*/, const Mat4& /*aToProjectionMatrix*/)
+void GraphicsEngine::Update(const GraphicsSwapChain* aSwapChain, Camera /*aCamera*/) //TODO: handle data races
 {
     if (aSwapChain->GetHeight() < 4 && aSwapChain->GetWidth() < 4)
     {
@@ -90,12 +90,12 @@ void GraphicsEngine::Update(const GraphicsSwapChain* aSwapChain, float /*aDeltaS
         Resize(width, height);
     }
 
-    const float clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
-    myCommandList->RSSetScissorRects(1, &myScissorRect);
-    myCommandList->RSSetViewports(1, &myViewport);
-    myCommandList->ClearRenderTargetView(myRtvHeap->GetCPUDescriptorHandleForHeapStart(), clearColor, 0, nullptr);
-    myCommandList->ClearDepthStencilView(myDsvHeap->GetCPUDescriptorHandleForHeapStart(),
-        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
+    //const float clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
+    //myCommandList->RSSetScissorRects(1, &myScissorRect);
+    //myCommandList->RSSetViewports(1, &myViewport);
+    //myCommandList->ClearRenderTargetView(myRtvHeap->GetCPUDescriptorHandleForHeapStart(), clearColor, 0, nullptr);
+    //myCommandList->ClearDepthStencilView(myDsvHeap->GetCPUDescriptorHandleForHeapStart(),
+    //    D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
 
 
 

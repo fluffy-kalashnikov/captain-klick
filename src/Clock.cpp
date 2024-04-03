@@ -11,7 +11,7 @@ Clock::Clock()
 {
 }
 
-void Clock::OnInitialize()
+void Clock::Initialize()
 {
 	LARGE_INTEGER count{};
 	QueryPerformanceFrequency(&count);
@@ -22,7 +22,7 @@ void Clock::OnInitialize()
 	myPrevCount = count.QuadPart;
 }
 
-void Clock::OnUpdate()
+void Clock::Update()
 {
 	LARGE_INTEGER count{};
 	QueryPerformanceCounter(&count);
