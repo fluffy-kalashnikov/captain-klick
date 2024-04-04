@@ -10,13 +10,14 @@ public:
 	Camera(const Camera&) = default;
 	~Camera() = default;
 	Camera& operator=(const Camera&) = default;
-	void Update(float aDeltaSeconds);
-	Mat4 ToViewMatrix() const;
-	Mat4 ToProjectionMatrix(float aAspectRatio) const;
+	void Update(float aDeltaSeconds, Vec2 aResolution);
+	Mat4 GetViewMatrix() const;
+	Mat4 GetProjectionMatrix() const;
 private:
-	Transform myTransform;
-	Vec3 myMoveVelocity;
-	float myGravity;
 	bool myGrounded;
+	float myGravity;
+	Vec2 myResolution;
+	Vec3 myMoveVelocity;
+	Transform myTransform;
 };
 

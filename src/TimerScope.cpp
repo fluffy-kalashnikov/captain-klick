@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TimerScope.h"
+#include <mutex>
 
 static inline long long Count()
 {
@@ -24,9 +25,14 @@ TimerScope::TimerScope(const char* aBenchmarkName)
 {
 }
 
+
 TimerScope::~TimerScope()
 {
+    static std::mutex mutex;
+
     const long long diff = Count() - myCount;
+    
+    std::lock_guard lock(mutex);
     OutputDebugStringA(myName);
     OutputDebugStringA(" took ");
     OutputDebugStringA(std::to_string(CountToMs(diff)).c_str());

@@ -4,6 +4,7 @@
 #include "HLSL/includeConstantBuffers.hlsli.h"
 #include "InputHandler.h"
 #include "Vertex.h"
+#include "TimerScope.h"
 
 using namespace GraphicsGlobals;
 
@@ -70,7 +71,7 @@ void GraphicsEngine::Initialize(GraphicsDevice* aDevice)
     }
 }
 
-void GraphicsEngine::Update(const GraphicsSwapChain* aSwapChain, Camera /*aCamera*/) //TODO: handle data races
+void GraphicsEngine::Update(const GraphicsSwapChain* aSwapChain, const Camera aCamera) //TODO: handle data races
 {
     if (aSwapChain->GetHeight() < 4 && aSwapChain->GetWidth() < 4)
     {
@@ -90,50 +91,48 @@ void GraphicsEngine::Update(const GraphicsSwapChain* aSwapChain, Camera /*aCamer
         Resize(width, height);
     }
 
-    //const float clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
-    //myCommandList->RSSetScissorRects(1, &myScissorRect);
-    //myCommandList->RSSetViewports(1, &myViewport);
-    //myCommandList->ClearRenderTargetView(myRtvHeap->GetCPUDescriptorHandleForHeapStart(), clearColor, 0, nullptr);
-    //myCommandList->ClearDepthStencilView(myDsvHeap->GetCPUDescriptorHandleForHeapStart(),
-    //    D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
+    cbPassStruct pass{}; //TODO: separate rotation and translation matrix
+    pass.cameraV = aCamera.GetViewMatrix();
+    pass.cameraP = aCamera.GetProjectionMatrix();
+    pass.cameraVP = pass.cameraV * pass.cameraP;
+    myPassConstantBuffer.Upload(pass);
 
+    D3D12_CPU_DESCRIPTOR_HANDLE rtv = myRtvHeap->GetCPUDescriptorHandleForHeapStart(),
+                                dsv = myDsvHeap->GetCPUDescriptorHandleForHeapStart();
+    const float clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
+    myCommandList->RSSetScissorRects(1, &myScissorRect);
+    myCommandList->RSSetViewports(1, &myViewport);
+    myCommandList->ClearRenderTargetView(myRtvHeap->GetCPUDescriptorHandleForHeapStart(), clearColor, 0, nullptr);
+    myCommandList->ClearDepthStencilView(myDsvHeap->GetCPUDescriptorHandleForHeapStart(),
+        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
+    myCommandList->SetGraphicsRootSignature(globalRootSignature.Get());
+    myCommandList->SetPipelineState(globalWorkPipeline.Get());
+    myCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    myCommandList->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
+    for (int n = 0; n < 20000; n++)
+    {
+        myCommandList->DrawInstanced(4, 1, 0, 0);
+    }
 
-
-
-
-    //cbPassStruct pass{};
-    //pass.cameraV = aToViewMatrix;
-    //pass.cameraP = aToProjectionMatrix;
-    //pass.cameraVP = pass.cameraV * pass.cameraP;
-    //pass.timeSeconds = aTimeSeconds;
-    //pass.deltaSeconds = aDeltaSeconds;
-    //myPassConstantBuffer.Upload(pass);
-
-    //myGraphicsDevice.WaitForGPU();
-    
-    //commandList->SetPipelineState(globalWorkPipeline.Get());
-    //commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    //for (int n = 0; n < 2000; n++)
-    //{
-    //    commandList->DrawInstanced(4, 1, 0, 0);
-    //}
-
-    //commandList->SetPipelineState(globalModelPipeline.Get());
-    //commandList->SetGraphicsRootConstantBufferView(1, myPassConstantBuffer.GetGPUVirtualAddress());
-    //for (Buffer& instanceConstantBuffer : myInstanceConstantBuffers)
-    //{
-    //    commandList->SetGraphicsRootConstantBufferView(0, instanceConstantBuffer.GetGPUVirtualAddress());
-    //    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    //    commandList->IASetVertexBuffers(0, 1, &globalCubeMesh.VertexBufferView());
-    //    commandList->IASetIndexBuffer(&globalCubeMesh.IndexBufferView());
-    //    commandList->DrawIndexedInstanced(36, 1, 0, 0, 0);
-    //}
+    myCommandList->SetPipelineState(globalModelPipeline.Get());
+    myCommandList->SetGraphicsRootConstantBufferView(1, myPassConstantBuffer.GetGPUVirtualAddress());
+    for (Buffer& instanceConstantBuffer : myInstanceConstantBuffers)
+    {
+        myCommandList->SetGraphicsRootConstantBufferView(0, instanceConstantBuffer.GetGPUVirtualAddress());
+        myCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        myCommandList->IASetVertexBuffers(0, 1, &globalCubeMesh.VertexBufferView());
+        myCommandList->IASetIndexBuffer(&globalCubeMesh.IndexBufferView());
+        myCommandList->DrawIndexedInstanced(36, 1, 0, 0, 0);
+    }
 
 
 
     ThrowIfFailed(myCommandList->Close());
     myQueue.ExecuteCommandList(myCommandList);
-    myQueue.WaitForIdle();
+    {
+        TimerScope timer("GraphicsEngine");
+        myQueue.WaitForIdle();
+    }
     ThrowIfFailed(myCommandAllocator->Reset());
     ThrowIfFailed(myCommandList->Reset(myCommandAllocator.Get(), nullptr));
   

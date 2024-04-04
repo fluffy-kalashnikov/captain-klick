@@ -200,19 +200,17 @@ void GraphicsSwapChain::GuardedThread(GraphicsDevice* aDevice, GraphicsQueue* aQ
 			aDevice->CreateDepthStencilView(myDepthStencilBuffer.Get(), myDsvHeap->GetCPUDescriptorHandleForHeapStart());
 		}
 
-		myCamera.Update(0.01f);
+		myCamera.Update(0.01f, { static_cast<float>(myWidth), static_cast<float>(myHeight) });
 
 		cbInstanceStruct cbInstance;
 		cbInstance.transform = Mat4::TranslationMatrix(0, 0, 200);
 		cbInstance.color = Vec4(1, 1, 1, 1);
 		instanceConstantBuffer.Upload(cbInstance);
 
-		cbPassStruct cbPass;
-		cbPass.cameraV = myCamera.ToViewMatrix();
-		cbPass.cameraP = myCamera.ToProjectionMatrix(myAspectRatio);
+		cbPassStruct cbPass; //TODO: separate rotation and translation matrix
+		cbPass.cameraV = myCamera.GetViewMatrix();
+		cbPass.cameraP = myCamera.GetProjectionMatrix();
 		cbPass.cameraVP = cbPass.cameraV * cbPass.cameraP;
-		cbPass.deltaSeconds;
-		cbPass.timeSeconds;
 		passConstantBuffer.Upload(cbPass);
 
 

@@ -15,8 +15,10 @@ Camera::Camera()
 {
 }
 
-void Camera::Update(float aDeltaSeconds)
+void Camera::Update(float aDeltaSeconds, const Vec2 aResolution)
 {
+	myResolution = aResolution;
+
 	//moving
 	//Vec3 direction = myMoveVelocity;
 	//direction.Normalize();
@@ -96,12 +98,13 @@ void Camera::Update(float aDeltaSeconds)
 	//myTransform.translation.y = std::max(eyeHeight, myTransform.translation.y + myGravity * aDeltaSeconds);
 }
 
-Mat4 Camera::ToViewMatrix() const
+Mat4 Camera::GetViewMatrix() const
 {
 	return myTransform.ToMatrix().Inverse();
 }
 
-Mat4 Camera::ToProjectionMatrix(float aAspectRatio) const
+Mat4 Camera::GetProjectionMatrix() const
 {
-	return Mat4::PerspectiveMatrix(DEG_90, aAspectRatio, 10, 10000);
+	float aspectRatio = myResolution.x / myResolution.y;
+	return Mat4::PerspectiveMatrix(DEG_90, aspectRatio, 10, 10000);
 }
