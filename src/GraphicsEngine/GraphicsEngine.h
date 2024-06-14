@@ -21,6 +21,7 @@ private:
 	GraphicsQueue myQueue;
 	D3D12_RECT myScissorRect{};
 	D3D12_VIEWPORT myViewport{};
+	UINT myAllocatorIndex{};
 	ComPtr<ID3D12CommandAllocator> myCommandAllocator;
 	ComPtr<ID3D12GraphicsCommandList> myCommandList;
 	ComPtr<ID3D12Resource> mySceneBuffer;

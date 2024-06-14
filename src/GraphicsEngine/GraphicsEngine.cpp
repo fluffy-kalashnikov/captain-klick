@@ -97,19 +97,19 @@ void GraphicsEngine::Update(const GraphicsSwapChain* aSwapChain, const Camera aC
     pass.cameraVP = pass.cameraV * pass.cameraP;
     myPassConstantBuffer.Upload(pass);
 
-    D3D12_CPU_DESCRIPTOR_HANDLE rtv = myRtvHeap->GetCPUDescriptorHandleForHeapStart(),
-                                dsv = myDsvHeap->GetCPUDescriptorHandleForHeapStart();
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = myRtvHeap->GetCPUDescriptorHandleForHeapStart(),
+                                dsvHandle = myDsvHeap->GetCPUDescriptorHandleForHeapStart();
     const float clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
     myCommandList->RSSetScissorRects(1, &myScissorRect);
     myCommandList->RSSetViewports(1, &myViewport);
-    myCommandList->ClearRenderTargetView(myRtvHeap->GetCPUDescriptorHandleForHeapStart(), clearColor, 0, nullptr);
-    myCommandList->ClearDepthStencilView(myDsvHeap->GetCPUDescriptorHandleForHeapStart(),
+    myCommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+    myCommandList->ClearDepthStencilView(dsvHandle,
         D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
     myCommandList->SetGraphicsRootSignature(globalRootSignature.Get());
     myCommandList->SetPipelineState(globalWorkPipeline.Get());
     myCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    myCommandList->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
-    for (int n = 0; n < 20000; n++)
+    myCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+    for (int n = 0; n < 1; n++)
     {
         myCommandList->DrawInstanced(4, 1, 0, 0);
     }

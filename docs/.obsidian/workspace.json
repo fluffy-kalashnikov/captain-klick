@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "post-mortem.md",
+                "file": "daily/2024-03-20.md",
                 "mode": "source",
                 "source": false
               }
@@ -44,7 +44,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -90,7 +90,8 @@
               "state": {}
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -110,7 +111,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "post-mortem.md",
+                "file": "planning.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -127,7 +128,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "post-mortem.md",
+                "file": "planning.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -150,7 +151,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "post-mortem.md"
+                "file": "planning.md"
               }
             }
           },
@@ -179,12 +180,35 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "b6162b6f4997a9f0",
+  "active": "cc9ad924dc79f4b2",
   "lastOpenFiles": [
-    "daily/2024-02-12.md",
-    "planning.md",
-    "post-mortem.md",
     "daily/2024-04-03.md",
+    "daily/2024-03-20.md",
+    "gpu-preemption.md",
+    "cube-arena-v1.png",
+    "async-reprojection.md",
+    "daily/2024-02-26.md",
+    "daily/2024-02-22.md",
+    "daily/2024-02-21.md",
+    "daily/2024-02-20.md",
+    "daily/2024-02-19.md",
+    "daily/2024-02-15.md",
+    "daily/2024-02-14.md",
+    "daily/2024-02-13.md",
+    "daily/2024-02-12.md",
+    "daily/2024-02-27.md",
+    "daily/2024-02-28.md",
+    "daily/2024-02-29.md",
+    "daily/2024-03-11.md",
+    "daily/2024-03-12.md",
+    "daily/2024-03-13.md",
+    "daily/2024-03-18.md",
+    "daily/2024-03-19.md",
+    "daily/2024-03-05.md",
+    "planning.md",
+    "daily/2024-03-14.md",
+    "daily/2024-03-07.md",
+    "daily/2024-03-06.md",
     "Pasted image 20240403171329.png",
     "Pasted image 20240403170431.png",
     "actual-thank-you-pix.png",
@@ -192,31 +216,8 @@
     "Pasted image 20240403133104 1.png",
     "Pasted image 20240403133104.png",
     "thank-you-pix.png",
-    "daily/2024-04-02.md",
-    "daily/2024-03-28.md",
-    "daily/2024-03-27.md",
     "Pasted image 20240327100541.png",
     "thank-you-d3d12.png",
-    "daily/2024-03-26.md",
-    "daily/2024-03-25.md",
-    "daily/2024-03-21.md",
-    "daily/2024-03-20.md",
-    "daily/2024-03-19.md",
-    "Pasted image 20240319134451.png",
-    "daily/2024-03-18.md",
-    "daily/2024-03-14.md",
-    "daily/2024-03-13.md",
-    "daily/2024-03-06.md",
-    "daily/2024-03-05.md",
-    "daily/2024-03-04.md",
-    "daily/2024-02-29.md",
-    "daily/2024-02-28.md",
-    "daily/2024-02-27.md",
-    "daily/2024-02-26.md",
-    "daily/2024-02-22.md",
-    "daily/2024-02-21.md",
-    "daily/2024-02-20.md",
-    "daily/2024-02-19.md",
     "planning.pdf",
     "daily"
   ]
